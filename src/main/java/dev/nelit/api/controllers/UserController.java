@@ -1,5 +1,6 @@
 package dev.nelit.api.controllers;
 
+import dev.nelit.api.dto.user.request.ChangePassword;
 import dev.nelit.api.dto.user.request.Register;
 import dev.nelit.api.dto.user.response.UserResponse;
 import dev.nelit.api.services.UserService;
@@ -18,7 +19,16 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserResponse> create(@RequestBody @Valid Register request) {
-        return userService.create(request);
+    public Mono<UserResponse> create(@RequestBody @Valid Register registerDTO) {
+        return userService.create(registerDTO);
+    }
+
+    @PatchMapping("/change-password")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Void> changePassword(@RequestBody @Valid ChangePassword changePasswordDTO) {
+        return Mono.deferContextual(ctx -> {
+            Long idUser = ctx.get("id_user");
+            return userService.changePassword(idUser, changePasswordDTO);
+        });
     }
 }

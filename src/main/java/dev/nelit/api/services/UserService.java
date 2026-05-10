@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 public interface UserService {
     Mono<UserResponse> create(Register registerDTO);
-    Mono<UserResponse> changePassword(Long idUser, ChangePassword changePasswordDTO);
+    Mono<Void> changePassword(Long idUser, ChangePassword changePasswordDTO);
     Mono<Void> delete(Long idUser);
 
     Mono<User> findByEmail(String email);

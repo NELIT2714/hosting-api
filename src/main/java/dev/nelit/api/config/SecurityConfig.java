@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .pathMatchers("/v1/auth/**").permitAll()
 
                 .pathMatchers(HttpMethod.POST, "/v1/users").permitAll()
+//                .pathMatchers(HttpMethod.PATCH, "/v1/users/change-password").authenticated()
 
                 .anyExchange().authenticated()
             )

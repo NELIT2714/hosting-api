@@ -6,6 +6,7 @@ import dev.nelit.api.dto.user.request.Register;
 import dev.nelit.api.dto.user.response.UserResponse;
 import dev.nelit.api.exception.domain.CurrentPasswordIncorrectException;
 import dev.nelit.api.exception.domain.EmailAlreadyExistsException;
+import dev.nelit.api.exception.domain.PasswordsDontMatch;
 import dev.nelit.api.exception.domain.UserNotFoundException;
 import dev.nelit.api.mappers.UserMapper;
 import dev.nelit.api.repository.UserRepository;
@@ -37,18 +38,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<UserResponse> changePassword(Long idUser, ChangePassword changePasswordDTO) {
+    public Mono<Void> changePassword(Long idUser, ChangePassword changePasswordDTO) {
         return userRepository.findById(idUser)
             .switchIfEmpty(Mono.error(new UserNotFoundException()))
             .flatMap(user -> {
-                if (!passwordEncoder.matches(changePasswordDTO.currentPassword(), user.getPasswordHash())) {
+                if (!passwordEncoder.matches(changePasswordDTO.currentPassword(), user.getPasswordHash()))
                     return Mono.error(new CurrentPasswordIncorrectException());
-                }
+
+                if (!changePasswordDTO.newPassword().equals(changePasswordDTO.repeatedNewPassword()))
+                    return Mono.error(new PasswordsDontMatch());
 
                 user.setPasswordHash(passwordEncoder.encode(changePasswordDTO.newPassword()));
                 return userRepository.save(user);
             })
-            .map(userMapper::toResponse);
+            .then();
     }
 
     @Override
