@@ -1,4 +1,6 @@
-package dev.nelit.api.domain.exception;
+package dev.nelit.api.domain.exception.plan;
+
+import dev.nelit.api.domain.exception.DomainException;
 
 public class PlanNameAlreadyTakenException extends DomainException {
     public PlanNameAlreadyTakenException() {

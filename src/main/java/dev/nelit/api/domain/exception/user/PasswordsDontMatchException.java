@@ -1,4 +1,6 @@
-package dev.nelit.api.domain.exception;
+package dev.nelit.api.domain.exception.user;
+
+import dev.nelit.api.domain.exception.DomainException;
 
 public class PasswordsDontMatchException extends DomainException {
 

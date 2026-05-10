@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono;
 public interface PlanService {
     Mono<PlanResponse> create(CreatePlan createPlanDTO);
     Mono<PlanResponse> update(Long id, UpdatePlan updatePlanDTO);
-    Mono<PlanResponse> delete(Long id);
+    Mono<Void> delete(Long id);
 }

@@ -1,7 +1,7 @@
 package dev.nelit.api.services.impl;
 
 import dev.nelit.api.dto.request.user.Login;
-import dev.nelit.api.domain.exception.InvalidCredentialsException;
+import dev.nelit.api.domain.exception.user.InvalidPasswordException;
 import dev.nelit.api.services.AuthService;
 import dev.nelit.api.services.JwtService;
 import dev.nelit.api.services.UserService;
@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
         return userService.findByEmail(loginDTO.email())
             .flatMap(user -> {
                 if (!passwordEncoder.matches(loginDTO.password(), user.getPasswordHash())) {
-                    return Mono.error(new InvalidCredentialsException());
+                    return Mono.error(new InvalidPasswordException());
                 }
                 return Mono.just(jwtService.generate(user.getIdUser()));
             });
