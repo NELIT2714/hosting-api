@@ -1,6 +1,6 @@
 package dev.nelit.api.services;
 
-import dev.nelit.api.dto.user.request.Login;
+import dev.nelit.api.dto.request.user.Login;
 import reactor.core.publisher.Mono;
 
 public interface AuthService {

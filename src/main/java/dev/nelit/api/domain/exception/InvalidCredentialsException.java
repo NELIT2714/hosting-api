@@ -1,4 +1,4 @@
-package dev.nelit.api.exception.domain;
+package dev.nelit.api.domain.exception;
 
 public class InvalidCredentialsException extends DomainException {
 

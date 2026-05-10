@@ -1,4 +1,4 @@
-package dev.nelit.api.dto.user.response;
+package dev.nelit.api.dto.response.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

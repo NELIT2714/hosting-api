@@ -1,7 +1,7 @@
 package dev.nelit.api.services.impl;
 
-import dev.nelit.api.dto.user.request.Login;
-import dev.nelit.api.exception.domain.InvalidCredentialsException;
+import dev.nelit.api.dto.request.user.Login;
+import dev.nelit.api.domain.exception.InvalidCredentialsException;
 import dev.nelit.api.services.AuthService;
 import dev.nelit.api.services.JwtService;
 import dev.nelit.api.services.UserService;

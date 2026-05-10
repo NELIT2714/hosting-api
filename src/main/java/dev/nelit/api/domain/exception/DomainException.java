@@ -1,4 +1,4 @@
-package dev.nelit.api.exception.domain;
+package dev.nelit.api.domain.exception;
 
 public abstract class DomainException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package dev.nelit.api.dto.user.request;
+package dev.nelit.api.dto.request.user;
 
 import jakarta.validation.constraints.Email;
 

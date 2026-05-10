@@ -1,6 +1,6 @@
 package dev.nelit.api.controllers;
 
-import dev.nelit.api.dto.user.request.Login;
+import dev.nelit.api.dto.request.user.Login;
 import dev.nelit.api.services.AuthService;
 import dev.nelit.api.services.CookieService;
 import lombok.RequiredArgsConstructor;

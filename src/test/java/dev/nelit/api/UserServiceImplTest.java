@@ -1,6 +1,6 @@
 package dev.nelit.api;
 
-import dev.nelit.api.dto.user.request.Register;
+import dev.nelit.api.dto.request.user.Register;
 import dev.nelit.api.domain.entity.user.User;
 import dev.nelit.api.repository.UserRepository;
 import dev.nelit.api.services.impl.UserServiceImpl;

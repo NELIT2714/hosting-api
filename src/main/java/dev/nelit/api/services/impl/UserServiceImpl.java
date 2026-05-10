@@ -1,13 +1,13 @@
 package dev.nelit.api.services.impl;
 
 import dev.nelit.api.domain.entity.user.User;
-import dev.nelit.api.dto.user.request.ChangePassword;
-import dev.nelit.api.dto.user.request.Register;
-import dev.nelit.api.dto.user.response.UserResponse;
-import dev.nelit.api.exception.domain.CurrentPasswordIncorrectException;
-import dev.nelit.api.exception.domain.EmailAlreadyExistsException;
-import dev.nelit.api.exception.domain.PasswordsDontMatch;
-import dev.nelit.api.exception.domain.UserNotFoundException;
+import dev.nelit.api.dto.request.user.ChangePassword;
+import dev.nelit.api.dto.request.user.Register;
+import dev.nelit.api.dto.response.user.UserResponse;
+import dev.nelit.api.domain.exception.CurrentPasswordIncorrectException;
+import dev.nelit.api.domain.exception.EmailAlreadyExistsException;
+import dev.nelit.api.domain.exception.PasswordsDontMatchException;
+import dev.nelit.api.domain.exception.UserNotFoundException;
 import dev.nelit.api.mappers.UserMapper;
 import dev.nelit.api.repository.UserRepository;
 import dev.nelit.api.services.UserService;
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
                     return Mono.error(new CurrentPasswordIncorrectException());
 
                 if (!changePasswordDTO.newPassword().equals(changePasswordDTO.repeatedNewPassword()))
-                    return Mono.error(new PasswordsDontMatch());
+                    return Mono.error(new PasswordsDontMatchException());
 
                 user.setPasswordHash(passwordEncoder.encode(changePasswordDTO.newPassword()));
                 return userRepository.save(user);

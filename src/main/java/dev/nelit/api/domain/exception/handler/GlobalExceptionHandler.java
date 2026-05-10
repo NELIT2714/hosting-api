@@ -1,7 +1,7 @@
-package dev.nelit.api.exception.handler;
+package dev.nelit.api.domain.exception.handler;
 
+import dev.nelit.api.domain.exception.DomainException;
 import dev.nelit.api.dto.ApiErrorResponse;
-import dev.nelit.api.exception.domain.DomainException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

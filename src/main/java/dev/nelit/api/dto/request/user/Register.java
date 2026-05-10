@@ -1,4 +1,4 @@
-package dev.nelit.api.dto.user.request;
+package dev.nelit.api.dto.request.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.AssertTrue;

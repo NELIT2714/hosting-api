@@ -1,7 +1,7 @@
 package dev.nelit.api.mappers;
 
 import dev.nelit.api.domain.entity.user.User;
-import dev.nelit.api.dto.user.response.UserResponse;
+import dev.nelit.api.dto.response.user.UserResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
