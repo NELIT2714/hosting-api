@@ -5,7 +5,7 @@ import dev.nelit.api.domain.exception.plan.PlanNameAlreadyTakenException;
 import dev.nelit.api.domain.exception.plan.PlanNotFound;
 import dev.nelit.api.dto.request.plan.CreatePlan;
 import dev.nelit.api.dto.request.plan.UpdatePlan;
-import dev.nelit.api.dto.response.plan.PlanResponse;
+import dev.nelit.api.dto.response.PlanResponse;
 import dev.nelit.api.mappers.PlanMapper;
 import dev.nelit.api.repository.PlanRepository;
 import dev.nelit.api.services.PlanService;

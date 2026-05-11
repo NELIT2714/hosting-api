@@ -2,7 +2,7 @@ package dev.nelit.api.controllers;
 
 import dev.nelit.api.dto.request.plan.CreatePlan;
 import dev.nelit.api.dto.request.plan.UpdatePlan;
-import dev.nelit.api.dto.response.plan.PlanResponse;
+import dev.nelit.api.dto.response.PlanResponse;
 import dev.nelit.api.services.PlanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

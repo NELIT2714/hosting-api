@@ -3,7 +3,7 @@ package dev.nelit.api.services.impl;
 import dev.nelit.api.domain.entity.user.User;
 import dev.nelit.api.dto.request.user.ChangePassword;
 import dev.nelit.api.dto.request.user.Register;
-import dev.nelit.api.dto.response.user.UserResponse;
+import dev.nelit.api.dto.response.UserResponse;
 import dev.nelit.api.domain.exception.user.CurrentPasswordIncorrectException;
 import dev.nelit.api.domain.exception.user.EmailAlreadyExistsException;
 import dev.nelit.api.domain.exception.user.PasswordsDontMatchException;

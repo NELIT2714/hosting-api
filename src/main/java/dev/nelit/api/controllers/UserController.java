@@ -2,7 +2,7 @@ package dev.nelit.api.controllers;
 
 import dev.nelit.api.dto.request.user.ChangePassword;
 import dev.nelit.api.dto.request.user.Register;
-import dev.nelit.api.dto.response.user.UserResponse;
+import dev.nelit.api.dto.response.UserResponse;
 import dev.nelit.api.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

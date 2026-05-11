@@ -3,7 +3,7 @@ package dev.nelit.api.services;
 import dev.nelit.api.domain.entity.user.User;
 import dev.nelit.api.dto.request.user.ChangePassword;
 import dev.nelit.api.dto.request.user.Register;
-import dev.nelit.api.dto.response.user.UserResponse;
+import dev.nelit.api.dto.response.UserResponse;
 import reactor.core.publisher.Mono;
 
 public interface UserService {

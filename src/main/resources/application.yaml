@@ -2,6 +2,10 @@ server:
   port: 4000
 
 spring:
+  security:
+    user:
+      password: ignored
+
   application:
     name: hosting-api
 
