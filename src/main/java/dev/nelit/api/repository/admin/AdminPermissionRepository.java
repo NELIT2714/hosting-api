@@ -8,4 +8,6 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface AdminPermissionRepository extends ReactiveCrudRepository<AdminPermission, Long> {
     Flux<AdminPermission> findByIdAdmin(Long idAdmin);
+
+    <T> Flux<T> deleteAllByIdAdmin(Long idAdmin);
 }

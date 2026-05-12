@@ -7,15 +7,20 @@ import dev.nelit.api.domain.exception.user.UserNotFoundException;
 import dev.nelit.api.dto.request.admin.CreateAdmin;
 import dev.nelit.api.dto.response.AdminResponse;
 import dev.nelit.api.enums.AdminPermissions;
+import dev.nelit.api.mappers.AdminMapper;
 import dev.nelit.api.repository.UserRepository;
 import dev.nelit.api.repository.admin.AdminPermissionRepository;
 import dev.nelit.api.repository.admin.AdminRepository;
 import dev.nelit.api.services.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,37 +29,39 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final AdminPermissionRepository adminPermissionRepository;
     private final UserRepository userRepository;
+    private final AdminMapper adminMapper;
 
     @Override
-    public Mono<AdminResponse> create(CreateAdmin createAdminDTO) {
-        return userRepository.findById(createAdminDTO.idUser())
+    public Mono<AdminResponse> create(CreateAdmin dto) {
+        return userRepository.findById(dto.idUser())
             .switchIfEmpty(Mono.error(new UserNotFoundException()))
-            .flatMap(_ -> {
-                Admin admin = Admin.builder()
-                    .idUser(createAdminDTO.idUser())
-                    .build();
+            .flatMap(_ -> adminRepository.save(adminMapper.toAdmin(dto)))
+            .flatMap(saved -> {
+                List<AdminPermission> permissions = dto.permissions().stream()
+                    .map(p -> adminMapper.toPermission(saved.getIdAdmin(), p))
+                    .toList();
 
-                return adminRepository.save(admin)
-                    .flatMap(savedAdmin -> {
-                        List<AdminPermission> permissions = createAdminDTO.permissions().stream()
-                            .map(p -> AdminPermission.builder()
-                                .idAdmin(savedAdmin.getIdAdmin())
-                                .permission(p.name())
-                                .build()
-                            )
-                            .toList();
-
-                        return adminPermissionRepository.saveAll(permissions)
-                            .map(AdminPermission::getPermission)
-                            .collectList()
-                            .map(perms -> new AdminResponse(
-                                savedAdmin.getIdAdmin(),
-                                savedAdmin.getIdUser(),
-                                perms,
-                                savedAdmin.getCreatedAt()
-                            ));
-                    });
+                return adminPermissionRepository.saveAll(permissions)
+                    .map(AdminPermission::getPermission)
+                    .collectList()
+                    .map(perms -> adminMapper.toResponse(saved, perms));
             });
+    }
+
+    @Override
+    public Mono<AdminResponse> update(Long idAdmin, Set<AdminPermissions> permissionsToUpdate) {
+        return adminRepository.findById(idAdmin)
+            .switchIfEmpty(Mono.error(new AdminNotFoundException()))
+            .flatMap(admin -> adminPermissionRepository.deleteAllByIdAdmin(idAdmin)
+                .thenMany(adminPermissionRepository.saveAll(
+                    permissionsToUpdate.stream()
+                        .map(p -> adminMapper.toPermission(idAdmin, p))
+                        .toList()
+                ))
+                .map(AdminPermission::getPermission)
+                .collectList()
+                .map(perms -> adminMapper.toResponse(admin, perms))
+            );
     }
 
     @Override
@@ -67,7 +74,6 @@ public class AdminServiceImpl implements AdminService {
         return adminPermissionRepository.findByIdAdmin(idAdmin)
             .switchIfEmpty(Mono.error(new AdminNotFoundException()))
             .map(AdminPermission::getPermission)
-            .map(AdminPermissions::valueOf)
             .collectList();
     }
 

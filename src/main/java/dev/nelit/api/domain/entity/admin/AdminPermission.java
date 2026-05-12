@@ -1,5 +1,6 @@
 package dev.nelit.api.domain.entity.admin;
 
+import dev.nelit.api.enums.AdminPermissions;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.relational.core.mapping.Column;
@@ -14,6 +15,6 @@ public class AdminPermission {
     private Long idAdmin;
 
     @Column("permission")
-    private String permission;
+    private AdminPermissions permission;
 
 }

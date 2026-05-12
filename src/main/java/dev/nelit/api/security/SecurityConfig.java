@@ -42,6 +42,10 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
 
+                .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
+                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
+                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
+
                 .anyExchange().denyAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
