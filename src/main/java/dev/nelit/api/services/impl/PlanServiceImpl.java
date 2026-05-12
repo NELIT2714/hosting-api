@@ -2,7 +2,7 @@ package dev.nelit.api.services.impl;
 
 import dev.nelit.api.domain.entity.Plan;
 import dev.nelit.api.domain.exception.plan.PlanNameAlreadyTakenException;
-import dev.nelit.api.domain.exception.plan.PlanNotFound;
+import dev.nelit.api.domain.exception.plan.PlanNotFoundException;
 import dev.nelit.api.dto.request.plan.CreatePlan;
 import dev.nelit.api.dto.request.plan.UpdatePlan;
 import dev.nelit.api.dto.response.PlanResponse;
@@ -42,7 +42,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public Mono<PlanResponse> update(Long planId, UpdatePlan updatePlanDTO) {
         return planRepository.findById(planId)
-            .switchIfEmpty(Mono.error(new PlanNotFound()))
+            .switchIfEmpty(Mono.error(new PlanNotFoundException()))
             .flatMap(plan -> {
                 planMapper.update(updatePlanDTO, plan);
                 return planRepository.save(plan);
@@ -53,7 +53,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public Mono<Void> delete(Long planId) {
         return planRepository.findById(planId)
-            .switchIfEmpty(Mono.error(new PlanNotFound()))
+            .switchIfEmpty(Mono.error(new PlanNotFoundException()))
             .flatMap(planRepository::delete);
     }
 }

@@ -8,7 +8,7 @@ public record UpdateNode(
     @JsonProperty("id_node") Long idNode,
     @JsonProperty("node_name") String nodeName,
     @JsonProperty("ip_address") String ipAddress,
-    @JsonProperty("grpc_port") String grpcPort,
+    @JsonProperty("grpc_port") Integer grpcPort,
     @JsonProperty("location") String location,
     @JsonProperty("is_active") Boolean isActive,
     @JsonProperty("created_at") Instant createdAt

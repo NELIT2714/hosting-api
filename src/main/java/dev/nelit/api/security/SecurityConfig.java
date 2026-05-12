@@ -1,10 +1,10 @@
-package dev.nelit.api.config;
+package dev.nelit.api.security;
 
-import dev.nelit.api.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -14,6 +14,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
 @EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -29,9 +30,19 @@ public class SecurityConfig {
                 .pathMatchers("/v1/auth/**").permitAll()
 
                 .pathMatchers(HttpMethod.POST, "/v1/users").permitAll()
-//                .pathMatchers(HttpMethod.PATCH, "/v1/users/change-password").authenticated()
+                .pathMatchers(HttpMethod.PATCH, "/v1/users/change-password").authenticated()
 
-                .anyExchange().authenticated()
+                // Plans
+                .pathMatchers(HttpMethod.POST, "/v1/plans").hasAuthority("PERMISSION_PLAN_CREATE")
+                .pathMatchers(HttpMethod.PATCH, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_UPDATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_DELETE")
+
+                // Nodes
+                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
+                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
+
+                .anyExchange().denyAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();

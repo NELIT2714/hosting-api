@@ -2,8 +2,8 @@ package dev.nelit.api.domain.exception.plan;
 
 import dev.nelit.api.domain.exception.DomainException;
 
-public class PlanNotFound extends DomainException {
-    public PlanNotFound() {
+public class PlanNotFoundException extends DomainException {
+    public PlanNotFoundException() {
         super("PLAN_NOT_FOUND", "Plan not found");
     }
 }

@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS nodes
     id_node        SERIAL NOT NULL,
     node_name      VARCHAR(64) NOT NULL,
     ip_address     VARCHAR(255) NOT NULL,
-    grpc_port      SMALLINT NOT NULL,
+    grpc_port      INTEGER NOT NULL,
     location       VARCHAR(64),
     is_active      BOOLEAN DEFAULT TRUE,
     created_at     TIMESTAMP NOT NULL,
@@ -92,6 +92,37 @@ CREATE TABLE IF NOT EXISTS virtual_machines
         ON UPDATE CASCADE,
 
     FOREIGN KEY (id_plan) REFERENCES plans(id_plan)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
+-- ADMINS
+CREATE TABLE IF NOT EXISTS admins
+(
+    id_admin       SERIAL NOT NULL,
+    id_user        INTEGER NOT NULL,
+    created_at     TIMESTAMP NOT NULL,
+
+    PRIMARY KEY (id_admin),
+    UNIQUE (id_user),
+
+    FOREIGN KEY (id_user) REFERENCES users(id_user)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
+-- ADMIN PERMISSIONS
+CREATE TABLE IF NOT EXISTS admin_permissions
+(
+    id_admin       INTEGER NOT NULL,
+    permission     VARCHAR(30) NOT NULL,
+
+    PRIMARY KEY (id_admin, permission),
+    FOREIGN KEY (id_admin) REFERENCES admins(id_admin)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

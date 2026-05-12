@@ -1,5 +1,8 @@
 package dev.nelit.api.domain.exception;
 
+import lombok.Getter;
+
+@Getter
 public abstract class DomainException extends RuntimeException {
 
     private final String code;
@@ -7,9 +10,5 @@ public abstract class DomainException extends RuntimeException {
     protected DomainException(String code, String message) {
         super(message);
         this.code = code;
-    }
-
-    public String getCode() {
-        return code;
     }
 }

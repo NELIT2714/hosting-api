@@ -1,9 +1,9 @@
 package dev.nelit.api.repository;
 
-import dev.nelit.api.domain.entity.Plan;
+import dev.nelit.api.domain.entity.Node;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PlanRepository extends ReactiveCrudRepository<Plan, Long> {
+public interface NodeRepository extends ReactiveCrudRepository<Node, Long> {
 }
