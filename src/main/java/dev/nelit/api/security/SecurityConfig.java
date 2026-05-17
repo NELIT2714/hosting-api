@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
                 .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
 
-                .anyExchange().denyAll()
+                .anyExchange().permitAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();

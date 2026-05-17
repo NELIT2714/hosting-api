@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     private HttpStatus mapStatus(DomainException ex) {
         return switch (ex.getCode()) {
             case "EMAIL_ALREADY_EXISTS", "PLAN_NAME_ALREADY_TAKEN", "NODE_NAME_ALREADY_TAKEN" -> HttpStatus.CONFLICT;
-            case "USER_NOT_FOUND", "PLAN_NOT_FOUND", "NODE_NOT_FOUND" -> HttpStatus.NOT_FOUND;
+            case "USER_NOT_FOUND", "PLAN_NOT_FOUND", "NODE_NOT_FOUND", "OS_IMAGE_NOT_FOUND" -> HttpStatus.NOT_FOUND;
             default -> HttpStatus.BAD_REQUEST;
         };
     }

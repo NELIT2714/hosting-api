@@ -9,6 +9,9 @@ spring:
   application:
     name: hosting-api
 
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
   sql:
     init:
       mode: always
@@ -21,3 +24,8 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration-days: ${JWT_EXPIRATION_DAYS}
+
+grpc:
+  vm-manager:
+    host: ${GRPC_VM_MANAGER_HOST}
+    port: ${GRPC_VM_MANAGER_PORT}

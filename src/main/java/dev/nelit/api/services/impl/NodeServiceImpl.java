@@ -14,12 +14,21 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class NodeServiceImpl implements NodeService {
 
     private final NodeRepository nodeRepository;
     private final NodeMapper nodeMapper;
+
+    @Override
+    public Mono<List<NodeResponse>> getAll() {
+        return nodeRepository.findAll()
+            .map(nodeMapper::toResponse)
+            .collectList();
+    }
 
     @Override
     public Mono<NodeResponse> create(CreateNode createNodeDTO) {

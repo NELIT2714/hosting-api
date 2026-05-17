@@ -74,9 +74,10 @@ CREATE TABLE IF NOT EXISTS virtual_machines
     id_user        INTEGER NOT NULL,
     id_node        INTEGER NOT NULL,
     id_plan        INTEGER NOT NULL,
-    vm_name        VARCHAR(20) NOT NULL,
-    uuid           VARCHAR(36) NOT NULL,
+    vm_name        VARCHAR(20),
+    uuid           VARCHAR(36),
     ip_address     VARCHAR(15),
+    status         VARCHAR(20) NOT NULL DEFAULT 'pending',
     created_at     TIMESTAMP NOT NULL,
 
     PRIMARY KEY (id_vm),
@@ -94,6 +95,20 @@ CREATE TABLE IF NOT EXISTS virtual_machines
     FOREIGN KEY (id_plan) REFERENCES plans(id_plan)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+);
+
+
+
+-- OS_IMAGES
+CREATE TABLE IF NOT EXISTS os_images
+(
+    id_os_image    SERIAL NOT NULL,
+    image_name     VARCHAR(50) NOT NULL,
+    file_name      VARCHAR(50) NOT NULL,
+
+    PRIMARY KEY (id_os_image),
+    UNIQUE (file_name),
+    UNIQUE (image_name)
 );
 
 

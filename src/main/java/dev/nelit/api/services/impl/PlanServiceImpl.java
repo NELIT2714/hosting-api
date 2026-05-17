@@ -22,6 +22,13 @@ public class PlanServiceImpl implements PlanService {
     private final PlanMapper planMapper;
 
     @Override
+    public Mono<PlanResponse> getById(Long planId) {
+        return planRepository.findById(planId)
+            .switchIfEmpty(Mono.error(new PlanNotFoundException()))
+            .map(planMapper::toResponse);
+    }
+
+    @Override
     public Mono<PlanResponse> create(CreatePlan createPlanDTO) {
         Plan plan = Plan.builder()
             .planName(createPlanDTO.planName())

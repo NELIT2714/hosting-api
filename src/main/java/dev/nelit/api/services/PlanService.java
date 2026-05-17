@@ -6,6 +6,7 @@ import dev.nelit.api.dto.response.PlanResponse;
 import reactor.core.publisher.Mono;
 
 public interface PlanService {
+    Mono<PlanResponse> getById(Long planId);
     Mono<PlanResponse> create(CreatePlan createPlanDTO);
     Mono<PlanResponse> update(Long id, UpdatePlan updatePlanDTO);
     Mono<Void> delete(Long id);
