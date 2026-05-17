@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users
 CREATE TABLE IF NOT EXISTS users_telegram
 (
     id_user_telegram    SERIAL NOT NULL,
-    id_user             INTEGER NOT NULL,
+    id_user             BIGINT NOT NULL,
     telegram_id         VARCHAR(16) NOT NULL,
     first_name          VARCHAR(64) NOT NULL,
     last_name           VARCHAR(64),
@@ -71,9 +71,9 @@ CREATE TABLE IF NOT EXISTS plans
 CREATE TABLE IF NOT EXISTS virtual_machines
 (
     id_vm          SERIAL NOT NULL,
-    id_user        INTEGER NOT NULL,
-    id_node        INTEGER NOT NULL,
-    id_plan        INTEGER NOT NULL,
+    id_user        BIGINT NOT NULL,
+    id_node        BIGINT NOT NULL,
+    id_plan        BIGINT NOT NULL,
     vm_name        VARCHAR(20) NOT NULL,
     uuid           VARCHAR(36) NOT NULL,
     ip_address     VARCHAR(15),
@@ -98,11 +98,33 @@ CREATE TABLE IF NOT EXISTS virtual_machines
 
 
 
+-- IP ADDRESSES
+CREATE TABLE IF NOT EXISTS ip_pool
+(
+    id_ip           SERIAL NOT NULL,
+    id_node         BIGINT NOT NULL,
+    id_vm           BIGINT,
+    ip_address      VARCHAR(45) NOT NULL,
+
+    PRIMARY KEY (id_ip),
+    UNIQUE (ip_address),
+
+    FOREIGN KEY (id_node) REFERENCES nodes (id_node)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (id_vm) REFERENCES virtual_machines (id_vm)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
 -- ADMINS
 CREATE TABLE IF NOT EXISTS admins
 (
     id_admin       SERIAL NOT NULL,
-    id_user        INTEGER NOT NULL,
+    id_user        BIGINT NOT NULL,
     created_at     TIMESTAMP NOT NULL,
 
     PRIMARY KEY (id_admin),
