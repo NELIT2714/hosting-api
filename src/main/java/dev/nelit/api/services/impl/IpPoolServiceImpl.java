@@ -22,7 +22,6 @@ public class IpPoolServiceImpl implements IpPoolService {
 
     @Override
     public Mono<IpPoolResponse> create(CreateIP createIP) {
-        System.out.println(createIP.idNode());
         IpPool ipPool = IpPool.builder()
             .idNode(createIP.idNode())
             .ipAddress(createIP.ipAddress())
