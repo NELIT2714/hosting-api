@@ -16,10 +16,10 @@ public class IpPool {
     private Long idIp;
 
     @Column("id_node")
-    private Integer idNode;
+    private Long idNode;
 
     @Column("id_vm")
-    private Integer idVm;
+    private Long idVm;
 
     @Column("ip_address")
     private String ipAddress;

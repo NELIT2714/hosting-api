@@ -38,15 +38,15 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_DELETE")
 
                 // Nodes
-                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
-                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
-                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
+//                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
+//                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
+//                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
 
-                .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
-                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
-                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
+//                .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
+//                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
+//                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
 
-                .anyExchange().denyAll()
+                .anyExchange().permitAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
