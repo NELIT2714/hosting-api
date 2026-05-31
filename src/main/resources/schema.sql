@@ -75,8 +75,7 @@ CREATE TABLE IF NOT EXISTS virtual_machines
     id_node        BIGINT NOT NULL,
     id_plan        BIGINT NOT NULL,
     vm_name        VARCHAR(20) NOT NULL,
-    uuid           VARCHAR(36) NOT NULL,
-    ip_address     VARCHAR(15),
+    uuid           VARCHAR(36) DEFAULT NULL,
     created_at     TIMESTAMP NOT NULL,
 
     PRIMARY KEY (id_vm),
@@ -114,7 +113,7 @@ CREATE TABLE IF NOT EXISTS ip_pool
         ON UPDATE CASCADE,
 
     FOREIGN KEY (id_vm) REFERENCES virtual_machines (id_vm)
-        ON DELETE CASCADE
+        ON DELETE SET NULL
         ON UPDATE CASCADE
 );
 

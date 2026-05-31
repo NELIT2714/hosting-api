@@ -2,6 +2,9 @@ server:
   port: 4000
 
 spring:
+  profiles:
+    active: dev
+
   security:
     user:
       password: ignored

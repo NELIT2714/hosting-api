@@ -5,5 +5,5 @@ import dev.nelit.api.dto.response.VMResponse;
 import reactor.core.publisher.Mono;
 
 public interface VMService {
-    Mono<VMResponse> create(CreateVM vmDTO);
+    Mono<VMResponse> create(CreateVM vmDTO, Long idUser);
 }

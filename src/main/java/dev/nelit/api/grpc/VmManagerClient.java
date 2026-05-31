@@ -44,17 +44,22 @@ public class VmManagerClient {
 
     public VmManager.VMResponse createVm(String vmName, int ramMb, int vcpus,
                                          int diskGb, String baseImage,
+                                         String ipAddress, String password, String sshKey,
                                          VmManager.NodeInfo node) {
-        VmManager.CreateVMRequest request = VmManager.CreateVMRequest.newBuilder()
+        VmManager.CreateVMRequest.Builder builder = VmManager.CreateVMRequest.newBuilder()
             .setVmName(vmName)
             .setRamMb(ramMb)
             .setVcpus(vcpus)
             .setDiskGb(diskGb)
+            .setIpAddress(ipAddress)
             .setBaseImage(baseImage)
-            .setNode(node)
-            .build();
+            .setVmPassword(password)
+            .setNode(node);
 
-        return stub.createVM(request);
+        if (password != null && !password.isBlank()) builder.setVmPassword(password);
+        if (sshKey != null && !sshKey.isBlank()) builder.setSshKey(sshKey);
+
+        return stub.createVM(builder.build());
     }
 
     public VmManager.NodeInfo pickNode(List<VmManager.NodeInfo> nodes) {

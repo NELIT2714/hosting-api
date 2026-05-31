@@ -12,6 +12,7 @@ import dev.nelit.api.services.NodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -24,10 +25,8 @@ public class NodeServiceImpl implements NodeService {
     private final NodeMapper nodeMapper;
 
     @Override
-    public Mono<List<NodeResponse>> getAll() {
-        return nodeRepository.findAll()
-            .map(nodeMapper::toResponse)
-            .collectList();
+    public Flux<NodeResponse> getAll() {
+        return nodeRepository.findAllByIsActiveIsTrue().map(nodeMapper::toResponse);
     }
 
     @Override

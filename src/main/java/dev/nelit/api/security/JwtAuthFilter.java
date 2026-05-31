@@ -15,6 +15,9 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter implements WebFilter {
@@ -35,24 +38,23 @@ public class JwtAuthFilter implements WebFilter {
         }
 
         Long idUser = jwtService.extractUserId(token);
+        String role = jwtService.extractRole(token);
 
-        return adminService.getByUserId(idUser)
-            .switchIfEmpty(Mono.defer(() -> {
-                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                return exchange.getResponse().setComplete().then(Mono.empty());
-            }))
-            .flatMap(admin -> adminService.getPermissions(admin.getIdAdmin())
-                .map(permissions -> permissions.stream()
-                    .map(p -> (GrantedAuthority) () -> "PERMISSION_" + p.name())
-                    .toList()
-                )
-                .flatMap(authorities -> {
-                    Authentication auth = new UsernamePasswordAuthenticationToken(
-                        idUser, null, authorities
-                    );
-                    return chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
-                })
+        Mono<List<GrantedAuthority>> authoritiesMono = "ADMIN".equals(role)
+            ? adminService.getByUserId(idUser)
+            .flatMap(admin -> adminService.getPermissions(admin.getIdAdmin()))
+            .map(permissions -> permissions.stream()
+                .map(p -> (GrantedAuthority) () -> "PERMISSION_" + p.name())
+                .collect(Collectors.toList()))
+            .defaultIfEmpty(List.of())
+            : Mono.just(List.of((GrantedAuthority) () -> "ROLE_USER"));
+
+        return authoritiesMono.flatMap(authorities -> {
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                idUser, null, authorities
             );
+            return chain.filter(exchange)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+        });
     }
 }

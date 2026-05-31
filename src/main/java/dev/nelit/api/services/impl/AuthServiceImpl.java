@@ -2,6 +2,7 @@ package dev.nelit.api.services.impl;
 
 import dev.nelit.api.dto.request.user.Login;
 import dev.nelit.api.domain.exception.user.InvalidPasswordException;
+import dev.nelit.api.services.AdminService;
 import dev.nelit.api.services.AuthService;
 import dev.nelit.api.services.JwtService;
 import dev.nelit.api.services.UserService;
@@ -17,6 +18,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final AdminService adminService;
 
     @Override
     public Mono<String> login(Login loginDTO) {
@@ -25,7 +27,12 @@ public class AuthServiceImpl implements AuthService {
                 if (!passwordEncoder.matches(loginDTO.password(), user.getPasswordHash())) {
                     return Mono.error(new InvalidPasswordException());
                 }
-                return Mono.just(jwtService.generate(user.getIdUser()));
+
+                return adminService.getByUserId(user.getIdUser())
+                    .map(admin -> jwtService.generate(user.getIdUser(), "ADMIN"))
+                    .switchIfEmpty(Mono.fromCallable(() ->
+                        jwtService.generate(user.getIdUser(), "USER")
+                    ));
             });
     }
 }

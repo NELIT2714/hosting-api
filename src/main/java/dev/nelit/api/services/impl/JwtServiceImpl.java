@@ -1,7 +1,9 @@
 package dev.nelit.api.services.impl;
 
 import dev.nelit.api.services.JwtService;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,15 +23,18 @@ public class JwtServiceImpl implements JwtService {
 
     private static final long DAY_IN_MS = 24 * 60 * 60 * 1000L;
 
-    public String generate(Long idUser) {
+    @Override
+    public String generate(Long idUser, String role) {
         return Jwts.builder()
-            .subject(idUser.toString())
+            .subject(String.valueOf(idUser))
+            .claim("role", role)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + expirationDays * DAY_IN_MS))
             .signWith(getSigningKey())
             .compact();
     }
 
+    @Override
     public Long extractUserId(String token) {
         return Long.parseLong(
             Jwts.parser()
@@ -41,6 +46,17 @@ public class JwtServiceImpl implements JwtService {
         );
     }
 
+    @Override
+    public String extractRole(String token) {
+        return Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get("role", String.class);
+    }
+
+    @Override
     public boolean isValid(String token) {
         try {
             Jwts.parser()
@@ -48,14 +64,12 @@ public class JwtServiceImpl implements JwtService {
                 .build()
                 .parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Base64.getDecoder().decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
-
 }

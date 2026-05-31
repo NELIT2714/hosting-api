@@ -32,9 +32,6 @@ public class VM {
     @Column("uuid")
     private String uuid;
 
-    @Column("ip_address")
-    private String ip_address;
-
     @Column("created_at")
     @Builder.Default
     private Instant createdAt = Instant.now();
