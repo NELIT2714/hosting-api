@@ -27,7 +27,7 @@ public class VMController {
                 Authentication authentication = ctx.getAuthentication();
                 if (authentication == null) return Mono.error(new AccessDeniedException("Not authenticated"));
                 Long idUser = (Long) authentication.getPrincipal();
-                return vmService.create(vmDTO, idUser);
+                return vmService.setup(vmDTO, idUser);
             });
     }
 

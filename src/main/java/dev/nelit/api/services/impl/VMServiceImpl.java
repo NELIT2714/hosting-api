@@ -1,12 +1,14 @@
 package dev.nelit.api.services.impl;
 
 import dev.nelit.api.domain.entity.VM;
+import dev.nelit.api.domain.entity.VpsOrder;
 import dev.nelit.api.dto.request.vm.CreateVM;
 import dev.nelit.api.dto.response.*;
 import dev.nelit.api.grpc.VmManagerClient;
 import dev.nelit.api.mappers.VMMapper;
 import dev.nelit.api.repository.VMRepository;
 import dev.nelit.api.services.*;
+import dev.nelit.api.services.orders.VpsOrderService;
 import dev.nelit.api.util.VMNameGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,41 +30,96 @@ public class VMServiceImpl implements VMService {
     private final OsImageService osImageService;
     private final IpPoolService ipPoolService;
     private final VMRepository vmRepository;
+    private final VpsOrderService vpsOrderService;
     private final TransactionalOperator tx;
 
     @Override
-    public Mono<VMResponse> create(CreateVM vmDTO, Long idUser) {
+    public Mono<VMResponse> setup(CreateVM vmDTO, Long idUser) {
         return Mono.zip(
-            planService.getById(vmDTO.idPlan()),
-            osImageService.getById(vmDTO.idOsImage()),
-            nodeService.getAll().collectList()
-        )
-        .flatMap(tuple -> {
-            PlanResponse plan = tuple.getT1();
-            OsImageResponse osImage = tuple.getT2();
-            List<NodeResponse> nodes = tuple.getT3();
+                planService.getById(vmDTO.idPlan()),
+                osImageService.getById(vmDTO.idOsImage()),
+                nodeService.getAll().collectList()
+            )
+            .flatMap(tuple -> {
+                PlanResponse plan = tuple.getT1();
+                OsImageResponse osImage = tuple.getT2();
+                List<NodeResponse> nodes = tuple.getT3();
 
-            List<VmManager.NodeInfo> nodeInfos = nodes.stream()
-                .map(node -> VmManager.NodeInfo.newBuilder()
-                    .setNodeId(node.idNode())
-                    .setIp(node.ipAddress())
-                    .setGrpcPort(node.grpcPort())
-                    .build()
-                )
-                .toList();
+                List<VmManager.NodeInfo> nodeInfos = buildNodeInfos(nodes);
 
-            return Mono.fromCallable(() -> vmManagerClient.pickNode(nodeInfos))
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(node -> ipPoolService.getFirstAvailable(node.getNodeId())
-                    .flatMap(ip -> saveVm(idUser, plan.idPlan(), node.getNodeId(), ip)
-                        .flatMap(savedVM -> callGrpc(savedVM, plan, osImage, node, vmDTO.password(), vmDTO.sshKey()))
-                        .onErrorResume(e -> ipPoolService.unassign(ip.idIp()).then(Mono.error(e)))
-                    )
-                );
-        }).map(vmMapper::toResponse);
+                return Mono.fromCallable(() -> vmManagerClient.pickNode(nodeInfos))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .flatMap(node -> ipPoolService.getFirstAvailable(node.getNodeId())
+                        .flatMap(ip -> create(idUser, plan.idPlan(), node.getNodeId(), ip)
+                            .flatMap(savedVM -> callGrpc(savedVM, plan, osImage, node, vmDTO.password(), vmDTO.sshKey()))
+                            .onErrorResume(e -> ipPoolService.unassign(ip.idIp()).then(Mono.error(e)))
+                        )
+                    );
+            }).map(vmMapper::toResponse);
     }
 
-    private Mono<VM> saveVm(Long idUser, Long planId, Long nodeId, IpPoolResponse ip) {
+    @Override
+    public Mono<VM> create(Long idUser, Long idPlan, Long idOsImage) {
+        return Mono.zip(
+                planService.getById(idPlan),
+                nodeService.getAll().collectList()
+            )
+            .flatMap(tuple -> {
+                PlanResponse plan = tuple.getT1();
+                List<NodeResponse> nodes = tuple.getT2();
+
+                List<VmManager.NodeInfo> nodeInfos = buildNodeInfos(nodes);
+
+                return Mono.fromCallable(() -> vmManagerClient.pickNode(nodeInfos))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .flatMap(node -> ipPoolService.getFirstAvailable(node.getNodeId())
+                        .flatMap(ip -> create(idUser, plan.idPlan(), node.getNodeId(), ip)
+                            .onErrorResume(e -> ipPoolService.unassign(ip.idIp()).then(Mono.error(e)))
+                        )
+                    );
+            });
+    }
+
+    @Override
+    public Mono<VMResponse> activate(Long idVm, VpsOrder vpsOrder, String password, String sshKey) {
+        return vmRepository.findById(idVm)
+            .flatMap(vm -> Mono.zip(
+                    planService.getById(vm.getIdPlan()),
+                    osImageService.getById(vpsOrder.getIdOsImage()),
+                    nodeService.getById(vm.getIdNode())
+                )
+                .flatMap(tuple -> {
+                    PlanResponse plan = tuple.getT1();
+                    OsImageResponse osImage = tuple.getT2();
+                    NodeResponse node = tuple.getT3();
+
+                    VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
+                        .setNodeId(node.idNode())
+                        .setIp(node.ipAddress())
+                        .setGrpcPort(node.grpcPort())
+                        .build();
+
+                    return callGrpc(vm, plan, osImage, nodeInfo, password, sshKey)
+                        .flatMap(savedVm -> {
+                            savedVm.setIsActive(true);
+                            return vmRepository.save(savedVm);
+                        });
+                }))
+            .map(vmMapper::toResponse);
+    }
+
+    private List<VmManager.NodeInfo> buildNodeInfos(List<NodeResponse> nodes) {
+        return nodes.stream()
+            .map(node -> VmManager.NodeInfo.newBuilder()
+                .setNodeId(node.idNode())
+                .setIp(node.ipAddress())
+                .setGrpcPort(node.grpcPort())
+                .build()
+            )
+            .toList();
+    }
+
+    private Mono<VM> create(Long idUser, Long planId, Long nodeId, IpPoolResponse ip) {
         VM newVm = VM.builder()
             .idUser(idUser)
             .idNode(nodeId)
@@ -78,17 +135,17 @@ public class VMServiceImpl implements VMService {
     private Mono<VM> callGrpc(VM savedVm, PlanResponse plan, OsImageResponse osImage, VmManager.NodeInfo pickedNode, String password, String sshKey) {
         return ipPoolService.getByIdVM(savedVm.getIdVM())
             .flatMap(ipPool -> Mono.fromCallable(() -> vmManagerClient.createVm(
-                    savedVm.getVmName(),
-                    plan.ramMb(),
-                    plan.vcpus(),
-                    plan.diskGb(),
-                    osImage.fileName(),
-                    ipPool.ipAddress(),
-                    password,
-                    sshKey,
-                    pickedNode
-                ))
-                .subscribeOn(Schedulers.boundedElastic())
+                        savedVm.getVmName(),
+                        plan.ramMb(),
+                        plan.vcpus(),
+                        plan.diskGb(),
+                        osImage.fileName(),
+                        ipPool.ipAddress(),
+                        password,
+                        sshKey,
+                        pickedNode
+                    ))
+                    .subscribeOn(Schedulers.boundedElastic())
             )
             .flatMap(grpcResponse -> {
                 savedVm.setUuid(grpcResponse.getUuid());

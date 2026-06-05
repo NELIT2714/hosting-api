@@ -1,2 +1,13 @@
 cookie:
   secure: false
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    com.fasterxml.jackson: DEBUG
+
+spring:
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always

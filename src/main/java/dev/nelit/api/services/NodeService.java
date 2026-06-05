@@ -6,10 +6,9 @@ import dev.nelit.api.dto.response.NodeResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 public interface NodeService {
     Flux<NodeResponse> getAll();
+    Mono<NodeResponse> getById(Long idNode);
     Mono<NodeResponse> create(CreateNode createNodeDTO);
     Mono<NodeResponse> update(Long idNode, UpdateNode updateNodeDTO);
     Mono<Void> delete(Long idNode);

@@ -30,6 +30,12 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
+    public Mono<NodeResponse> getById(Long idNode) {
+        return nodeRepository.findByIdNode(idNode)
+            .switchIfEmpty(Mono.error(new NodeNotFoundException()));
+    }
+
+    @Override
     public Mono<NodeResponse> create(CreateNode createNodeDTO) {
         Node node = Node.builder()
             .nodeName(createNodeDTO.nodeName())

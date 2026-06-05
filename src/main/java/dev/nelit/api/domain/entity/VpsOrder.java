@@ -10,34 +10,23 @@ import java.time.Instant;
 
 @Data
 @Builder
-@Table(name = "virtual_machines")
-public class VM {
+@Table(name = "vps_orders")
+public class VpsOrder {
 
     @Id
-    @Column("id_vm")
-    private Long idVM;
+    @Column("id_vps_order")
+    private Long idOrder;
 
-    @Column("id_user")
-    private Long idUser;
-
-    @Column("id_node")
-    private Long idNode;
+    @Column("id_payment")
+    private Long idPayment;
 
     @Column("id_plan")
     private Long idPlan;
 
-    @Column("vm_name")
-    private String vmName;
-
-    @Column("uuid")
-    private String uuid;
-
-    @Column("is_active")
-    @Builder.Default
-    private Boolean isActive = false;
+    @Column("id_os_image")
+    private Long idOsImage;
 
     @Column("created_at")
     @Builder.Default
     private Instant createdAt = Instant.now();
-
 }

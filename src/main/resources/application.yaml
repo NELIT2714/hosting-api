@@ -32,3 +32,8 @@ grpc:
   vm-manager:
     host: ${GRPC_VM_MANAGER_HOST}
     port: ${GRPC_VM_MANAGER_PORT}
+
+payments:
+  stripe:
+    secret-key: ${PAYMENTS_STRIPE_SECRET_KEY}
+    webhook-secret: ${PAYMENTS_STRIPE_WEBHOOK_SECRET}

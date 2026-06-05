@@ -10,5 +10,6 @@ public record VMResponse(
     String uuid,
     String ipAddress,
     String status,
+    Boolean isActive,
     Instant createdAt
 ) {}
