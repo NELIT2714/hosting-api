@@ -1,10 +1,9 @@
 package dev.nelit.api.mappers;
 
 import dev.nelit.api.domain.entity.admin.Admin;
-import dev.nelit.api.domain.entity.admin.AdminPermission;
 import dev.nelit.api.dto.request.admin.CreateAdmin;
 import dev.nelit.api.dto.response.AdminResponse;
-import dev.nelit.api.enums.AdminPermissions;
+import dev.nelit.api.enums.AdminPermission;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,14 +17,14 @@ public class AdminMapper {
             .build();
     }
 
-    public AdminPermission toPermission(Long idAdmin, AdminPermissions permission) {
-        return AdminPermission.builder()
+    public dev.nelit.api.domain.entity.admin.AdminPermission toPermission(Long idAdmin, AdminPermission permission) {
+        return dev.nelit.api.domain.entity.admin.AdminPermission.builder()
             .idAdmin(idAdmin)
             .permission(permission)
             .build();
     }
 
-    public AdminResponse toResponse(Admin admin, List<AdminPermissions> permissions) {
+    public AdminResponse toResponse(Admin admin, List<AdminPermission> permissions) {
         return new AdminResponse(
             admin.getIdAdmin(),
             admin.getIdUser(),

@@ -37,3 +37,10 @@ payments:
   stripe:
     secret-key: ${PAYMENTS_STRIPE_SECRET_KEY}
     webhook-secret: ${PAYMENTS_STRIPE_WEBHOOK_SECRET}
+
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs

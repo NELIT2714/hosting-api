@@ -1,7 +1,9 @@
 package dev.nelit.api.enums;
 
-public enum AdminPermissions {
+public enum AdminPermission {
     NODE_CREATE, NODE_UPDATE, NODE_DELETE,
     PLAN_CREATE, PLAN_UPDATE, PLAN_DELETE,
-    VM_CREATE, VM_START, VM_STOP, VM_DELETE
+    VM_CREATE, VM_START, VM_STOP, VM_DELETE,
+    IP_CREATE, IP_DELETE,
+    OS_IMAGE_CREATE, OS_IMAGE_DELETE
 }
