@@ -24,8 +24,24 @@ public class VpsOrderServiceImpl implements VpsOrderService {
     }
 
     @Override
+    public Mono<VpsOrder> setVm(Long idOrder, Long idVm) {
+        return vpsOrderRepository.findById(idOrder)
+            .switchIfEmpty(Mono.error(new PaymentNotFoundException()))
+            .flatMap(order -> {
+                order.setIdVm(idVm);
+                return vpsOrderRepository.save(order);
+            });
+    }
+
+    @Override
     public Mono<VpsOrder> getByIdPayment(Long idPayment) {
         return vpsOrderRepository.findByIdPayment(idPayment)
+            .switchIfEmpty(Mono.error(new PaymentNotFoundException()));
+    }
+
+    @Override
+    public Mono<VpsOrder> getByIdVm(Long idVm) {
+        return vpsOrderRepository.findByIdVm(idVm)
             .switchIfEmpty(Mono.error(new PaymentNotFoundException()));
     }
 }

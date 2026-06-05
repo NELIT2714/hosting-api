@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users
     id_user        SERIAL NOT NULL,
     email          VARCHAR(255),
     password_hash  VARCHAR(255),
-    created_at     TIMESTAMP NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_user),
     UNIQUE (email)
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS nodes
     grpc_port      INTEGER NOT NULL,
     location       VARCHAR(64),
     is_active      BOOLEAN DEFAULT TRUE,
-    created_at     TIMESTAMP NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_node),
     UNIQUE (node_name)
@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS virtual_machines
     vm_name        VARCHAR(20) NOT NULL,
     uuid           VARCHAR(36) DEFAULT NULL,
     is_active      BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at     TIMESTAMP NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT now(),
+    expires_at     TIMESTAMP NOT NULL,
 
     PRIMARY KEY (id_vm),
     UNIQUE (uuid),
@@ -125,7 +126,7 @@ CREATE TABLE IF NOT EXISTS admins
 (
     id_admin       SERIAL NOT NULL,
     id_user        BIGINT NOT NULL,
-    created_at     TIMESTAMP NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_admin),
     UNIQUE (id_user),
@@ -162,7 +163,7 @@ CREATE TABLE IF NOT EXISTS payments
     currency                VARCHAR(3) NOT NULL DEFAULT 'EUR',
     status                  VARCHAR(50) NOT NULL,   -- PENDING, SUCCEEDED, FAILED
     type                    VARCHAR(50) NOT NULL,   -- VPS_PURCHASE, DISK_ADDON, IP_ADDON
-    created_at              TIMESTAMP NOT NULL,
+    created_at              TIMESTAMP NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_payment),
     UNIQUE (gateway, gateway_payment_id),
@@ -178,13 +179,18 @@ CREATE TABLE IF NOT EXISTS payments
 CREATE TABLE IF NOT EXISTS vps_orders
 (
     id_vps_order    SERIAL NOT NULL,
+    id_vm           BIGINT DEFAULT NULL,
     id_payment      BIGINT NOT NULL,
     id_plan         BIGINT NOT NULL,
     id_os_image     BIGINT NOT NULL,
-    created_at      TIMESTAMP NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_vps_order),
     UNIQUE (id_payment),
+    UNIQUE (id_vm),
+
+    FOREIGN KEY (id_vm) REFERENCES virtual_machines(id_vm)
+        ON DELETE SET NULL ON UPDATE CASCADE,
 
     FOREIGN KEY (id_payment) REFERENCES payments(id_payment)
         ON DELETE CASCADE

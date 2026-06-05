@@ -40,4 +40,6 @@ public class VM {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+    private Instant expiresAt;
+
 }

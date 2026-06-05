@@ -3,13 +3,12 @@ package dev.nelit.api.dto.response;
 import java.time.Instant;
 
 public record VMResponse(
-    Long idVM,
-    Long idUser,
-    Long idPlan,
+    Long idVm,
     String vmName,
     String uuid,
     String ipAddress,
-    String status,
     Boolean isActive,
-    Instant createdAt
+    Instant createdAt,
+    Instant expiresAt,
+    PlanResponse plan
 ) {}

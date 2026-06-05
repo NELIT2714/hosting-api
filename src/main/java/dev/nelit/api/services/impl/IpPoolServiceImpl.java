@@ -23,6 +23,11 @@ public class IpPoolServiceImpl implements IpPoolService {
     private final IpPoolMapper ipPoolMapper;
 
     @Override
+    public Mono<Boolean> hasAvailable() {
+        return ipPoolRepository.existsByIdVmIsNull();
+    }
+
+    @Override
     public Mono<IpPoolResponse> getFirstAvailable(Long idNode) {
         return ipPoolRepository.findFirstByIdVmIsNullAndIdNodeOrderByIdIpAsc(idNode)
             .switchIfEmpty(Mono.error(new NoAvailableAddressesException()))

@@ -17,6 +17,9 @@ public class VpsOrder {
     @Column("id_vps_order")
     private Long idOrder;
 
+    @Column("id_vm")
+    private Long idVm;
+
     @Column("id_payment")
     private Long idPayment;
 

@@ -5,6 +5,7 @@ import dev.nelit.api.dto.response.IpPoolResponse;
 import reactor.core.publisher.Mono;
 
 public interface IpPoolService {
+    Mono<Boolean> hasAvailable();
     Mono<IpPoolResponse> getFirstAvailable(Long idNode);
     Mono<IpPoolResponse> getByIdVM(Long idVm);
     Mono<IpPoolResponse> create(CreateIP createIP);

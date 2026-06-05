@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface VpsOrderRepository extends ReactiveCrudRepository<VpsOrder, Long> {
     Mono<VpsOrder> findByIdPayment(Long idPayment);
+    Mono<VpsOrder> findByIdVm(Long idVm);
 }

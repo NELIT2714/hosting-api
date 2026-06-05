@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ApiErrorResponse> handleDomain(DomainException ex) {
-        HttpStatus status = mapStatus(ex);
+        HttpStatus status = ex.getStatus();
 
         return ResponseEntity
             .status(status)

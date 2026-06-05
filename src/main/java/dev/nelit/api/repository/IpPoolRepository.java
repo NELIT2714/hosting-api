@@ -9,6 +9,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface IpPoolRepository extends ReactiveCrudRepository<IpPool, Long> {
     Mono<IpPool> findFirstByIdVmIsNullAndIdNodeOrderByIdIpAsc(Long idNode);
-
     Mono<IpPool> findByIdVm(Long idVm);
+    Mono<Boolean> existsByIdVmIsNull();
 }

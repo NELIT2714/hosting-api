@@ -43,7 +43,9 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
         return paymentService.update(idPayment, PaymentStatus.SUCCEEDED, gatewayPaymentId)
             .flatMap(_ -> vpsOrderService.getByIdPayment(idPayment))
-            .flatMap(order -> vmService.create(idUser, order.getIdPlan(), order.getIdOsImage()))
+            .flatMap(order -> vmService.create(idUser, order.getIdPlan(), order.getIdOsImage())
+                .flatMap(vm -> vpsOrderService.setVm(order.getIdOrder(), vm.getIdVM()))
+            )
             .then();
     }
 
