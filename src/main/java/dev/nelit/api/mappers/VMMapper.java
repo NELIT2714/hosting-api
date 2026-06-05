@@ -16,6 +16,5 @@ public interface VMMapper {
     @Mapping(source = "vmName",    target = "vmName")
     @Mapping(source = "uuid",      target = "uuid")
     @Mapping(source = "ipAddress", target = "ipAddress")
-    @Mapping(source = "status",    target = "status")
     VMResponse toResponse(VmManager.VMResponse proto);
 }

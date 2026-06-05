@@ -27,6 +27,8 @@ public class SecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .authorizeExchange(auth -> auth
+                .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**").permitAll()
+
                 .pathMatchers("/v1/auth/**").permitAll()
 
                 .pathMatchers(HttpMethod.POST, "/v1/users").permitAll()
@@ -38,18 +40,29 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_DELETE")
 
                 // Nodes
-//                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
-//                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
-//                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
+                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
+                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
 
-//                .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
-//                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
-//                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
+                // IP pool
+                .pathMatchers(HttpMethod.POST, "/v1/ip-pool").hasAuthority("PERMISSION_IP_CREATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/ip-pool/**").hasAuthority("PERMISSION_IP_DELETE")
 
+                // VM
+                .pathMatchers("/v1/vms").authenticated()
 
-                .pathMatchers(HttpMethod.POST, "/v1/vms").authenticated()
+                // Checkout
+                .pathMatchers("/v1/checkout").authenticated()
 
-                .anyExchange().permitAll()
+                // OS images
+                .pathMatchers(HttpMethod.POST, "/v1/os-images").hasAuthority("PERMISSION_OS_IMAGE_CREATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/os-images/**").hasAuthority("PERMISSION_OS_IMAGE_DELETE")
+
+                .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
+                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
+                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
+
+                .anyExchange().denyAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();

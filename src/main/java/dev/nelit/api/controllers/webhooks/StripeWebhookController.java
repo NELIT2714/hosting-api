@@ -2,12 +2,14 @@ package dev.nelit.api.controllers.webhooks;
 
 import com.stripe.exception.SignatureVerificationException;
 import dev.nelit.api.services.payments.StripeWebhookService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+@Hidden
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/webhooks/stripe")
