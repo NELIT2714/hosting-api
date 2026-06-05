@@ -11,5 +11,5 @@ public interface VMService {
     Flux<VMResponse> getAllByUserId(Long idUser);
     Mono<VMResponse> setup(CreateVM vmDTO, Long idUser);
     Mono<VM> create(Long idUser, Long idPlan, Long idOsImage);
-    Mono<Void> activate(Long idVm, VpsOrder vpsOrder, String password, String sshKey);
+    Mono<Void> activate(Long idVm, Long idUser, String password, String sshKey);
 }

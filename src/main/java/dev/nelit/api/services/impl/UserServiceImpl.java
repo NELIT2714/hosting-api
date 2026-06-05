@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
                 if (!passwordEncoder.matches(changePasswordDTO.currentPassword(), user.getPasswordHash()))
                     return Mono.error(new CurrentPasswordIncorrectException());
 
-                if (!changePasswordDTO.newPassword().equals(changePasswordDTO.repeatedNewPassword()))
+                if (!changePasswordDTO.newPassword().equals(changePasswordDTO.repeatNewPassword()))
                     return Mono.error(new PasswordsDontMatchException());
 
                 user.setPasswordHash(passwordEncoder.encode(changePasswordDTO.newPassword()));

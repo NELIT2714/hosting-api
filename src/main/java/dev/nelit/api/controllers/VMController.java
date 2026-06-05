@@ -76,8 +76,17 @@ public class VMController {
         return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> {
                 Long idUser = (Long) ctx.getAuthentication().getPrincipal();
-                return vpsOrderService.getByIdVm(idVm)
-                    .flatMap(order -> vmService.activate(order.getIdVm(), order, request.password(), request.sshKey()));
+                return vmService.activate(idVm, idUser, request.password(), request.sshKey());
             });
+    }
+
+    @PostMapping("/{vm_id}/start")
+    public Mono<Void> start(@PathVariable("vm_id") Long idVm) {
+        return null;
+    }
+
+    @PostMapping("/{vm_id}/stop")
+    public Mono<Void> stop(@PathVariable("vm_id") Long idVm) {
+        return null;
     }
 }

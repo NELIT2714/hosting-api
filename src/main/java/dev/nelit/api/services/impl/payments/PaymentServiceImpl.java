@@ -10,6 +10,7 @@ import dev.nelit.api.repository.PaymentRepository;
 import dev.nelit.api.services.payments.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 

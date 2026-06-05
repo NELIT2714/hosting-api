@@ -36,8 +36,6 @@ public class PlanServiceImpl implements PlanService {
             .vcpus(createPlanDTO.vcpus())
             .diskGb(createPlanDTO.diskGb())
             .pricePerMonth(createPlanDTO.pricePerMonth())
-            .maxCount(createPlanDTO.maxCount())
-            .maxUplinkMbps(createPlanDTO.maxUplinkMbps())
             .isActive(createPlanDTO.isActive())
             .build();
 

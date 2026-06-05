@@ -1,8 +1,9 @@
 package dev.nelit.api.dto.request.user;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 public record Login(
-    @Email String email,
-    String password)
+    @Email @NotBlank String email,
+    @NotBlank String password)
 {}

@@ -28,13 +28,14 @@ public class SecurityConfig {
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .authorizeExchange(auth -> auth
                 .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**").permitAll()
-
+                .pathMatchers("/v1/webhooks/**").permitAll()
                 .pathMatchers("/v1/auth/**").permitAll()
 
                 .pathMatchers(HttpMethod.POST, "/v1/users").permitAll()
                 .pathMatchers(HttpMethod.PATCH, "/v1/users/change-password").authenticated()
 
                 // Plans
+                .pathMatchers(HttpMethod.GET, "/v1/plans").authenticated()
                 .pathMatchers(HttpMethod.POST, "/v1/plans").hasAuthority("PERMISSION_PLAN_CREATE")
                 .pathMatchers(HttpMethod.PATCH, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_DELETE")
@@ -50,11 +51,13 @@ public class SecurityConfig {
 
                 // VM
                 .pathMatchers("/v1/vms").authenticated()
+                .pathMatchers("/v1/vms/**").authenticated()
 
                 // Checkout
                 .pathMatchers("/v1/checkout").authenticated()
 
                 // OS images
+                .pathMatchers(HttpMethod.GET, "/v1/os-images").authenticated()
                 .pathMatchers(HttpMethod.POST, "/v1/os-images").hasAuthority("PERMISSION_OS_IMAGE_CREATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/os-images/**").hasAuthority("PERMISSION_OS_IMAGE_DELETE")
 

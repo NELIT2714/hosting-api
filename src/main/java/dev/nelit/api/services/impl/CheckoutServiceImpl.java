@@ -6,6 +6,7 @@ import dev.nelit.api.dto.request.checkout.VpsCheckoutDetails;
 import dev.nelit.api.dto.response.CheckoutResponse;
 import dev.nelit.api.enums.PaymentStatus;
 import dev.nelit.api.services.CheckoutService;
+import dev.nelit.api.services.OsImageService;
 import dev.nelit.api.services.PlanService;
 import dev.nelit.api.services.impl.payments.stripe.StripeCheckoutServiceImpl;
 import dev.nelit.api.services.orders.VpsOrderService;
@@ -21,6 +22,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final PaymentService paymentService;
     private final VpsOrderService vpsOrderService;
     private final PlanService planService;
+    private final OsImageService osImageService;
     private final StripeCheckoutServiceImpl stripeCheckoutService;
 
     @Override
@@ -28,8 +30,10 @@ public class CheckoutServiceImpl implements CheckoutService {
         return switch (request.details()) {
             case VpsCheckoutDetails vps -> planService.getById(vps.idPlan())
                 .flatMap(plan -> paymentService.create(idUser, PaymentStatus.PENDING, request.gateway(), null, plan.pricePerMonth(), "USD", request.details().type()))
-                .flatMap(payment -> vpsOrderService.create(payment.getIdPayment(), vps.idPlan(), vps.idOsImage())
-                    .thenReturn(payment))
+                .flatMap(payment -> osImageService.getById(vps.idOsImage())
+                    .flatMap(image -> vpsOrderService.create(payment.getIdPayment(), vps.idPlan(), image.idOsImage())
+                        .thenReturn(payment))
+                )
                 .flatMap(payment -> switch (request.gateway()) {
                     case STRIPE -> stripeCheckoutService.createSession(idUser, payment.getIdPayment(), payment.getAmount(), "USD").map(CheckoutResponse::new);
                     default -> Mono.error(new GatewayNotImplemented());

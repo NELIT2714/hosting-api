@@ -32,12 +32,6 @@ public class Plan {
     @Column("price_per_month")
     private BigDecimal pricePerMonth;
 
-    @Column("max_count")
-    private Integer maxCount;
-
-    @Column("max_uplink_mbps")
-    private Integer maxUplinkMbps;
-
     @Column("is_active")
     private Boolean isActive;
 

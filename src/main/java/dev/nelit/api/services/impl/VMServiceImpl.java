@@ -1,9 +1,8 @@
 package dev.nelit.api.services.impl;
 
 import dev.nelit.api.domain.entity.VM;
-import dev.nelit.api.domain.entity.VpsOrder;
-import dev.nelit.api.domain.exception.vm.VMAlreadyActiveException;
-import dev.nelit.api.domain.exception.vm.VMNotFoundException;
+import dev.nelit.api.domain.exception.vm.VmAlreadyActiveException;
+import dev.nelit.api.domain.exception.vm.VmNotFoundException;
 import dev.nelit.api.dto.request.vm.CreateVM;
 import dev.nelit.api.dto.response.*;
 import dev.nelit.api.grpc.VmManagerClient;
@@ -104,36 +103,37 @@ public class VMServiceImpl implements VMService {
     }
 
     @Override
-    public Mono<Void> activate(Long idVm, VpsOrder vpsOrder, String password, String sshKey) {
-        return vmRepository.findById(idVm)
-            .switchIfEmpty(Mono.error(new VMNotFoundException()))
-            .flatMap(vm -> {
-                if (Boolean.TRUE.equals(vm.getIsActive())) {
-                    return Mono.error(new VMAlreadyActiveException());
-                }
-                return Mono.zip(
-                        planService.getById(vm.getIdPlan()),
-                        osImageService.getById(vpsOrder.getIdOsImage()),
-                        nodeService.getById(vm.getIdNode())
-                    )
-                    .flatMap(tuple -> {
-                        PlanResponse plan = tuple.getT1();
-                        OsImageResponse osImage = tuple.getT2();
-                        NodeResponse node = tuple.getT3();
+    public Mono<Void> activate(Long idVm, Long idUser, String password, String sshKey) {
+        return vpsOrderService.getByIdVm(idVm)
+            .flatMap(order -> vmRepository.findById(idVm)
+                .switchIfEmpty(Mono.error(new VmNotFoundException()))
+                .flatMap(vm -> {
+                    if (!vm.getIdUser().equals(idUser)) return Mono.error(new VmNotFoundException());
+                    if (Boolean.TRUE.equals(vm.getIsActive())) return Mono.error(new VmAlreadyActiveException());
+                    return Mono.zip(
+                            planService.getById(vm.getIdPlan()),
+                            osImageService.getById(order.getIdOsImage()),
+                            nodeService.getById(vm.getIdNode())
+                        )
+                        .flatMap(tuple -> {
+                            PlanResponse plan = tuple.getT1();
+                            OsImageResponse osImage = tuple.getT2();
+                            NodeResponse node = tuple.getT3();
 
-                        VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                            .setNodeId(node.idNode())
-                            .setIp(node.ipAddress())
-                            .setGrpcPort(node.grpcPort())
-                            .build();
+                            VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
+                                .setNodeId(node.idNode())
+                                .setIp(node.ipAddress())
+                                .setGrpcPort(node.grpcPort())
+                                .build();
 
-                        return callGrpc(vm, plan, osImage, nodeInfo, password, sshKey)
-                            .flatMap(savedVm -> {
-                                savedVm.setIsActive(true);
-                                return vmRepository.save(savedVm);
-                            });
-                    });
-            })
+                            return callGrpc(vm, plan, osImage, nodeInfo, password, sshKey)
+                                .flatMap(savedVm -> {
+                                    savedVm.setIsActive(true);
+                                    return vmRepository.save(savedVm);
+                                });
+                        });
+                })
+            )
             .then();
     }
 

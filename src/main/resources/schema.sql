@@ -57,8 +57,6 @@ CREATE TABLE IF NOT EXISTS plans
     vcpus               INTEGER NOT NULL,
     disk_gb             INTEGER NOT NULL,
     price_per_month     DECIMAL(10,2) NOT NULL,
-    max_count           INTEGER NOT NULL,
-    max_uplink_mbps     INTEGER NOT NULL,
     is_active           BOOLEAN DEFAULT TRUE,
 
     PRIMARY KEY (id_plan),
@@ -175,6 +173,20 @@ CREATE TABLE IF NOT EXISTS payments
 
 
 
+-- OS images
+CREATE TABLE IF NOT EXISTS os_images
+(
+    id_os_image    SERIAL NOT NULL,
+    image_name     VARCHAR(50) NOT NULL,
+    file_name      VARCHAR(100) NOT NULL,
+
+    PRIMARY KEY (id_os_image),
+    UNIQUE(image_name),
+    UNIQUE(file_name)
+);
+
+
+
 -- VPS
 CREATE TABLE IF NOT EXISTS vps_orders
 (
@@ -197,6 +209,10 @@ CREATE TABLE IF NOT EXISTS vps_orders
         ON UPDATE CASCADE,
 
     FOREIGN KEY (id_plan) REFERENCES plans(id_plan)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (id_os_image) REFERENCES os_images(id_os_image)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

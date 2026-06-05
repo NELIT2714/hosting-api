@@ -1,16 +1,16 @@
 package dev.nelit.api.dto.request.plan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
 public record UpdatePlan(
-    @JsonProperty("plan_name") String planName,
-    @JsonProperty("ram_mb") Integer ramMb,
-    @JsonProperty("vcpus") Integer vcpus,
-    @JsonProperty("disk_gb") Integer diskGb,
-    @JsonProperty("price_per_month") BigDecimal pricePerMonth,
-    @JsonProperty("max_count") Integer maxCount,
-    @JsonProperty("max_uplink_mbps") Integer maxUplinkMbps,
-    @JsonProperty("is_active") Boolean isActive
+    @JsonProperty("plan_name") @NotBlank String planName,
+    @JsonProperty("ram_mb") @NotNull Integer ramMb,
+    @JsonProperty("vcpus") @NotNull Integer vcpus,
+    @JsonProperty("disk_gb") @NotNull Integer diskGb,
+    @JsonProperty("price_per_month") @NotNull BigDecimal pricePerMonth,
+    @JsonProperty("is_active") @NotNull Boolean isActive
 ) {}

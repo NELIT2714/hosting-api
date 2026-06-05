@@ -9,7 +9,9 @@ import dev.nelit.api.mappers.OsImageMapper;
 import dev.nelit.api.repository.OsImageRepository;
 import dev.nelit.api.services.OsImageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -18,6 +20,11 @@ public class OsImageServiceImpl implements OsImageService {
 
     private final OsImageRepository osImageRepository;
     private final OsImageMapper osImageMapper;
+
+    @Override
+    public Flux<OsImageResponse> getAll() {
+        return osImageRepository.findAll().map(osImageMapper::toResponse);
+    }
 
     @Override
     public Mono<OsImageResponse> getById(Long osImageId) {
@@ -34,14 +41,27 @@ public class OsImageServiceImpl implements OsImageService {
             .build();
 
         return osImageRepository.save(osImage)
-            .onErrorResume(e -> Mono.error(new OsImageAlreadyExists()))
+            .onErrorMap(DuplicateKeyException.class, _ -> new OsImageAlreadyExists())
+            .map(osImageMapper::toResponse);
+    }
+
+    @Override
+    public Mono<OsImageResponse> update(Long osImageId, CreateImage updateImageDTO) {
+        return osImageRepository.findById(osImageId)
+            .switchIfEmpty(Mono.error(new OsImageNotFound()))
+            .flatMap(existing -> {
+                existing.setImageName(updateImageDTO.imageName());
+                existing.setFileName(updateImageDTO.fileName());
+                return osImageRepository.save(existing)
+                    .onErrorMap(DuplicateKeyException.class, _ -> new OsImageAlreadyExists());
+            })
             .map(osImageMapper::toResponse);
     }
 
     @Override
     public Mono<Void> delete(Long osImageId) {
         return osImageRepository.deleteById(osImageId)
-            .onErrorResume(e -> Mono.error(new OsImageNotFound()));
+            .onErrorMap(DuplicateKeyException.class, _ -> new OsImageNotFound());
     }
 
 }
