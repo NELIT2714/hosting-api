@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.POST, "/v1/ip-pool").hasAuthority("PERMISSION_IP_CREATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/ip-pool/**").hasAuthority("PERMISSION_IP_DELETE")
 
-                // VM
+                // Vm
                 .pathMatchers("/v1/vms").authenticated()
                 .pathMatchers("/v1/vms/**").authenticated()
 

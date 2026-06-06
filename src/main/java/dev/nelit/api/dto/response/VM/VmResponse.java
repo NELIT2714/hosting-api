@@ -1,10 +1,14 @@
-package dev.nelit.api.dto.response;
+package dev.nelit.api.dto.response.VM;
+
+import dev.nelit.api.dto.response.PlanResponse;
 
 import java.time.Instant;
 
-public record VMResponse(
+public record VmResponse(
     Long idVm,
     String vmName,
+    Long idUser,
+    Long idNode,
     String uuid,
     String ipAddress,
     Boolean isActive,

@@ -11,7 +11,7 @@ import java.time.Instant;
 @Data
 @Builder
 @Table(name = "virtual_machines")
-public class VM {
+public class Vm {
 
     @Id
     @Column("id_vm")
@@ -36,10 +36,15 @@ public class VM {
     @Builder.Default
     private Boolean isActive = false;
 
+    @Column("is_blocked")
+    @Builder.Default
+    private Boolean isBlocked = false;
+
     @Column("created_at")
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+    @Column("expires_at")
     private Instant expiresAt;
 
 }

@@ -5,6 +5,6 @@ import org.springframework.http.HttpStatus;
 
 public class VmAlreadyActiveException extends DomainException {
     public VmAlreadyActiveException() {
-        super("VM_ALREADY_ACTIVATED", "VM already activated", HttpStatus.CONFLICT);
+        super("VM_ALREADY_ACTIVATED", "Vm already activated", HttpStatus.CONFLICT);
     }
 }

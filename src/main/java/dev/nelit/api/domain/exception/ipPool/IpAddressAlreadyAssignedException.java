@@ -5,6 +5,6 @@ import org.springframework.http.HttpStatus;
 
 public class IpAddressAlreadyAssignedException extends DomainException {
     public IpAddressAlreadyAssignedException() {
-        super("IP_ADDRESS_ALREADY_ASSIGNED", "IP is already assigned to a VM", HttpStatus.CONFLICT);
+        super("IP_ADDRESS_ALREADY_ASSIGNED", "IP is already assigned to a Vm", HttpStatus.CONFLICT);
     }
 }

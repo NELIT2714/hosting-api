@@ -11,7 +11,5 @@ public record PlanResponse(
     @JsonProperty("vcpus") int vcpus,
     @JsonProperty("disk_gb") int diskGb,
     @JsonProperty("price_per_month") BigDecimal pricePerMonth,
-    @JsonProperty("max_count") int maxCount,
-    @JsonProperty("max_uplink_mbps") int maxUplinkMbps,
     @JsonProperty("is_active") Boolean isActive
 ) {}

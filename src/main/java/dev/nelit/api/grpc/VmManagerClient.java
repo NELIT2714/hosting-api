@@ -53,7 +53,6 @@ public class VmManagerClient {
             .setDiskGb(diskGb)
             .setIpAddress(ipAddress)
             .setBaseImage(baseImage)
-            .setVmPassword(password)
             .setNode(node);
 
         if (password != null && !password.isBlank()) builder.setVmPassword(password);
@@ -68,5 +67,32 @@ public class VmManagerClient {
             .build();
 
         return stub.pickNode(request);
+    }
+
+    public VmManager.VMResponse startVm(String uuid, VmManager.NodeInfo node) {
+        VmManager.VMRequest request = VmManager.VMRequest.newBuilder()
+            .setUuid(uuid)
+            .setNode(node)
+            .build();
+
+        return stub.startVM(request);
+    }
+
+    public VmManager.VMResponse stopVm(String uuid, VmManager.NodeInfo node) {
+        VmManager.VMRequest request = VmManager.VMRequest.newBuilder()
+            .setUuid(uuid)
+            .setNode(node)
+            .build();
+
+        return stub.stopVM(request);
+    }
+
+    public VmManager.VMResponse getStatus(String uuid, VmManager.NodeInfo node) {
+        VmManager.VMRequest request = VmManager.VMRequest.newBuilder()
+            .setUuid(uuid)
+            .setNode(node)
+            .build();
+
+        return stub.getVM(request);
     }
 }

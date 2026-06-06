@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS virtual_machines
     vm_name        VARCHAR(20) NOT NULL,
     uuid           VARCHAR(36) DEFAULT NULL,
     is_active      BOOLEAN NOT NULL DEFAULT FALSE,
+    is_blocked     BOOLEAN NOT NULL DEFAULT FALSE,
     created_at     TIMESTAMP NOT NULL DEFAULT now(),
     expires_at     TIMESTAMP NOT NULL,
 
@@ -91,6 +92,21 @@ CREATE TABLE IF NOT EXISTS virtual_machines
         ON UPDATE CASCADE,
 
     FOREIGN KEY (id_plan) REFERENCES plans(id_plan)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
+-- Vm LIFECYCLE
+CREATE TABLE IF NOT EXISTS vm_lifecycle
+(
+    id_vm          BIGINT NOT NULL,
+    blocked_at     TIMESTAMP NOT NULL DEFAULT now(),
+    delete_at      TIMESTAMP,
+
+    PRIMARY KEY (id_vm),
+    FOREIGN KEY (id_vm) REFERENCES virtual_machines(id_vm)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

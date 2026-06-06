@@ -6,7 +6,7 @@ import com.stripe.model.Event;
 import com.stripe.net.Webhook;
 import dev.nelit.api.config.StripeProperties;
 import dev.nelit.api.enums.PaymentStatus;
-import dev.nelit.api.services.impl.VMServiceImpl;
+import dev.nelit.api.services.impl.vm.VmServiceImpl;
 import dev.nelit.api.services.impl.orders.VpsOrderServiceImpl;
 import dev.nelit.api.services.payments.PaymentService;
 import dev.nelit.api.services.payments.StripeWebhookService;
@@ -20,7 +20,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
     private final StripeProperties stripeProperties;
     private final PaymentService paymentService;
-    private final VMServiceImpl vmService;
+    private final VmServiceImpl vmService;
     private final VpsOrderServiceImpl vpsOrderService;
 
     @Override
