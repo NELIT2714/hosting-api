@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -15,10 +16,14 @@ public class VmLifecycleScheduler {
     private final VmRepository vmRepository;
     private final VmLifecycleService vmLifecycleService;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "UTC")
     public void blockExpired() {
-        vmRepository.findAllByExpiresAtBeforeAndIsBlockedFalse(Instant.now())
-            .flatMap(vm -> vmLifecycleService.block(vm.getIdVM()))
+        vmRepository.findAllByExpiresAtBeforeAndIsBlockedFalseAndIsActiveTrue(Instant.now().plus(1, ChronoUnit.MINUTES))
+            .doOnNext(vm -> System.out.println("[scheduler] found expired vm: " + vm.getIdVM()))
+            .flatMap(vm -> vmLifecycleService.block(vm.getIdVM())
+                .doOnSuccess(v -> System.out.println("[scheduler] blocked vm: " + vm.getIdVM()))
+                .doOnError(e -> System.out.println("[scheduler] error blocking vm " + vm.getIdVM() + ": " + e.getMessage()))
+            )
             .subscribe();
     }
 

@@ -5,6 +5,7 @@ import dev.nelit.api.domain.exception.node.NodeNameAlreadyTakenException;
 import dev.nelit.api.domain.exception.node.NodeNotFoundException;
 import dev.nelit.api.dto.request.node.CreateNode;
 import dev.nelit.api.dto.request.node.UpdateNode;
+import dev.nelit.api.dto.response.LocationResponse;
 import dev.nelit.api.dto.response.NodeResponse;
 import dev.nelit.api.mappers.NodeMapper;
 import dev.nelit.api.repository.NodeRepository;
@@ -33,6 +34,12 @@ public class NodeServiceImpl implements NodeService {
     public Mono<NodeResponse> getById(Long idNode) {
         return nodeRepository.findByIdNode(idNode)
             .switchIfEmpty(Mono.error(new NodeNotFoundException()));
+    }
+
+    @Override
+    public Flux<LocationResponse> getLocations() {
+        return nodeRepository.findAllByIsActiveIsTrue()
+            .map(node -> new LocationResponse(node.getIdNode(), node.getLocation()));
     }
 
     @Override

@@ -2,9 +2,11 @@ package dev.nelit.api.controllers;
 
 import dev.nelit.api.dto.request.node.CreateNode;
 import dev.nelit.api.dto.request.node.UpdateNode;
+import dev.nelit.api.dto.response.LocationResponse;
 import dev.nelit.api.dto.response.NodeResponse;
 import dev.nelit.api.services.NodeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,9 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Tag(name = "Nodes (Admin)", description = "Physical/virtual node management — admin access only")
+@Tag(name = "Nodes", description = "Physical/virtual node management")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/nodes")
@@ -24,7 +27,20 @@ public class NodeController {
     private final NodeService nodeService;
 
     @Operation(
-        summary = "Register a node",
+        summary = "Get available locations",
+        description = "Returns a list of available locations for VPS deployment",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Locations returned successfully",
+                content = @Content(array = @ArraySchema(schema = @Schema(implementation = LocationResponse.class))))
+        }
+    )
+    @GetMapping("/locations")
+    public Flux<LocationResponse> getLocations() {
+        return nodeService.getLocations();
+    }
+
+    @Operation(
+        summary = "Register a node (Admin)",
         description = "Adds a new hosting node to the infrastructure. Requires admin privileges.",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
@@ -45,7 +61,7 @@ public class NodeController {
     }
 
     @Operation(
-        summary = "Update a node",
+        summary = "Update a node (Admin)",
         description = "Updates configuration of an existing node by ID. Requires admin privileges.",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
@@ -68,7 +84,7 @@ public class NodeController {
     }
 
     @Operation(
-        summary = "Delete a node",
+        summary = "Delete a node (Admin)",
         description = "Permanently removes a node from the infrastructure. Requires admin privileges.",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {

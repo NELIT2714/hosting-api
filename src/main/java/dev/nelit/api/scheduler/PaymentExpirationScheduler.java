@@ -19,9 +19,9 @@ public class PaymentExpirationScheduler {
     private final PaymentRepository paymentRepository;
     private final TransactionalOperator tx;
 
-    @Scheduled(cron = "0 0 0 * * *", zone = "UTC")
+    @Scheduled(cron = "0 */35 * * * *", zone = "UTC")
     public void expireOldPayments() {
-        Instant threshold = Instant.now().minus(30, ChronoUnit.MINUTES);
+        Instant threshold = Instant.now().minus(35, ChronoUnit.MINUTES);
 
         paymentRepository.findAllByStatusAndCreatedAtBefore(PaymentStatus.PENDING, threshold)
             .flatMap(payment -> {

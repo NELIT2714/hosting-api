@@ -1,4 +1,4 @@
-package dev.nelit.api.domain.entity;
+package dev.nelit.api.domain.entity.vm;
 
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +14,9 @@ import java.time.Instant;
 public class VmLifecycle {
 
     @Id
+    @Column("id_lifecycle")
+    private Long idLifecycle;
+
     @Column("id_vm")
     private Long idVm;
 

@@ -12,6 +12,7 @@ public record VmResponse(
     String uuid,
     String ipAddress,
     Boolean isActive,
+    Boolean isBlocked,
     Instant createdAt,
     Instant expiresAt,
     PlanResponse plan

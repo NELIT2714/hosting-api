@@ -3,6 +3,7 @@ cookie:
 
 logging:
   level:
+    dev.nelit: DEBUG
     org.springframework.web: DEBUG
     com.fasterxml.jackson: DEBUG
 

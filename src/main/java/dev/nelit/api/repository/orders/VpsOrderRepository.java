@@ -1,6 +1,6 @@
 package dev.nelit.api.repository.orders;
 
-import dev.nelit.api.domain.entity.VpsOrder;
+import dev.nelit.api.domain.entity.vps.VpsOrder;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;

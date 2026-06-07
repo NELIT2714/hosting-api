@@ -1,6 +1,6 @@
 package dev.nelit.api.mappers;
 
-import dev.nelit.api.domain.entity.Vm;
+import dev.nelit.api.domain.entity.vm.Vm;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import org.mapstruct.Mapper;
 import vm_manager.VmManager;

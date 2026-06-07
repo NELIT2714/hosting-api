@@ -98,14 +98,15 @@ CREATE TABLE IF NOT EXISTS virtual_machines
 
 
 
--- Vm LIFECYCLE
+-- VM LIFECYCLE
 CREATE TABLE IF NOT EXISTS vm_lifecycle
 (
-    id_vm          BIGINT NOT NULL,
+    id_lifecycle   SERIAL NOT NULL,
+    id_vm          BIGINT NOT NULL UNIQUE,
     blocked_at     TIMESTAMP NOT NULL DEFAULT now(),
     delete_at      TIMESTAMP,
 
-    PRIMARY KEY (id_vm),
+    PRIMARY KEY (id_lifecycle),
     FOREIGN KEY (id_vm) REFERENCES virtual_machines(id_vm)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -129,7 +130,7 @@ CREATE TABLE IF NOT EXISTS ip_pool
         ON UPDATE CASCADE,
 
     FOREIGN KEY (id_vm) REFERENCES virtual_machines (id_vm)
-        ON DELETE SET NULL
+        ON DELETE CASCADE
         ON UPDATE CASCADE
 );
 
@@ -231,6 +232,27 @@ CREATE TABLE IF NOT EXISTS vps_orders
     FOREIGN KEY (id_os_image) REFERENCES os_images(id_os_image)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+);
+
+
+
+-- VPS RENEWAL
+CREATE TABLE IF NOT EXISTS vps_renewal_orders
+(
+    id_renewal_order  SERIAL NOT NULL,
+    id_vm             BIGINT NOT NULL,
+    id_payment        BIGINT NOT NULL,
+    days              INTEGER NOT NULL DEFAULT 30,
+    created_at        TIMESTAMP NOT NULL DEFAULT now(),
+
+    PRIMARY KEY (id_renewal_order),
+    UNIQUE (id_payment),
+
+    FOREIGN KEY (id_vm) REFERENCES virtual_machines(id_vm)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    FOREIGN KEY (id_payment) REFERENCES payments(id_payment)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 

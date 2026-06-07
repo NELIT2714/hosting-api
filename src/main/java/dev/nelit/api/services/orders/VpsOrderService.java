@@ -1,6 +1,6 @@
 package dev.nelit.api.services.orders;
 
-import dev.nelit.api.domain.entity.VpsOrder;
+import dev.nelit.api.domain.entity.vps.VpsOrder;
 import reactor.core.publisher.Mono;
 
 public interface VpsOrderService {

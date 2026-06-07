@@ -1,4 +1,4 @@
-package dev.nelit.api.domain.entity;
+package dev.nelit.api.domain.entity.vps;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,12 +10,12 @@ import java.time.Instant;
 
 @Data
 @Builder
-@Table(name = "vps_orders")
-public class VpsOrder {
+@Table(name = "vps_renewal_orders")
+public class VpsRenewalOrder {
 
     @Id
-    @Column("id_vps_order")
-    private Long idOrder;
+    @Column("id_renewal_order")
+    private Long idRenewalOrder;
 
     @Column("id_vm")
     private Long idVm;
@@ -23,11 +23,9 @@ public class VpsOrder {
     @Column("id_payment")
     private Long idPayment;
 
-    @Column("id_plan")
-    private Long idPlan;
-
-    @Column("id_os_image")
-    private Long idOsImage;
+    @Column("days")
+    @Builder.Default
+    private Integer days = 30;
 
     @Column("created_at")
     @Builder.Default

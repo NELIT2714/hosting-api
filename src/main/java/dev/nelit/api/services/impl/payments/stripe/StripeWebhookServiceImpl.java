@@ -6,10 +6,12 @@ import com.stripe.model.Event;
 import com.stripe.net.Webhook;
 import dev.nelit.api.config.StripeProperties;
 import dev.nelit.api.enums.PaymentStatus;
+import dev.nelit.api.services.impl.orders.VpsRenewalOrderServiceImpl;
+import dev.nelit.api.services.impl.vm.VmLifecycleServiceImpl;
 import dev.nelit.api.services.impl.vm.VmServiceImpl;
 import dev.nelit.api.services.impl.orders.VpsOrderServiceImpl;
 import dev.nelit.api.services.payments.PaymentService;
-import dev.nelit.api.services.payments.StripeWebhookService;
+import dev.nelit.api.services.payments.stripe.StripeWebhookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -22,6 +24,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
     private final PaymentService paymentService;
     private final VmServiceImpl vmService;
     private final VpsOrderServiceImpl vpsOrderService;
+    private final VpsRenewalOrderServiceImpl vpsRenewalOrderService;
+    private final VmLifecycleServiceImpl vmLifecycleService;
 
     @Override
     public Mono<Void> handleEvent(String rawBody, String sigHeader) {
@@ -40,13 +44,14 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
         JsonObject metadata = node.getAsJsonObject("metadata");
         Long idUser = Long.parseLong(metadata.get("user_id").getAsString());
+        String type = metadata.get("type").getAsString();
 
         return paymentService.update(idPayment, PaymentStatus.SUCCEEDED, gatewayPaymentId)
-            .flatMap(_ -> vpsOrderService.getByIdPayment(idPayment))
-            .flatMap(order -> vmService.create(idUser, order.getIdPlan(), order.getIdOsImage())
-                .flatMap(vm -> vpsOrderService.setVm(order.getIdOrder(), vm.getIdVM()))
-            )
-            .then();
+            .flatMap(_ -> switch (type) {
+                case "VPS_PURCHASE" -> handleVpsPurchase(idUser, idPayment);
+                case "VPS_RENEWAL" -> handleVpsRenewal(idPayment);
+                default -> Mono.error(new RuntimeException("unknown payment type: " + type));
+            });
     }
 
     private Mono<Void> handlePaymentFailed(Event event) {
@@ -54,6 +59,22 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
         Long idPayment = extractPaymentId(node);
         String gatewayPaymentId = extractField(node, "id");
         return paymentService.update(idPayment, PaymentStatus.FAILED, gatewayPaymentId).then();
+    }
+
+    private Mono<Void> handleVpsPurchase(Long idUser, Long idPayment) {
+        return vpsOrderService.getByIdPayment(idPayment)
+            .flatMap(order -> vmService.create(idUser, order.getIdPlan(), order.getIdOsImage())
+                .flatMap(vm -> vpsOrderService.setVm(order.getIdOrder(), vm.getIdVM()))
+            )
+            .then();
+    }
+
+    private Mono<Void> handleVpsRenewal(Long idPayment) {
+        return vpsRenewalOrderService.getByIdPayment(idPayment)
+            .flatMap(order -> vmService.renew(order.getIdVm(), order.getDays())
+                .then(vmLifecycleService.unblockIfBlocked(order.getIdVm()))
+            )
+            .then();
     }
 
     private JsonObject parseRawJson(Event event) {

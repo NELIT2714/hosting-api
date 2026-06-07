@@ -1,4 +1,4 @@
-package dev.nelit.api.domain.entity;
+package dev.nelit.api.domain.entity.vm;
 
 import lombok.Builder;
 import lombok.Data;

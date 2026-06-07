@@ -32,7 +32,7 @@ public class CheckoutController {
 
     @Operation(
         summary = "Create a checkout session",
-        description = "Initiates a Stripe payment session for the selected VPS plan. Returns a redirect URL to the payment page.",
+        description = "Initiates a payment session for VPS purchase or renewal. Returns a redirect URL to the payment page.",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
             @ApiResponse(responseCode = "200", description = "Checkout session created successfully",
@@ -40,6 +40,8 @@ public class CheckoutController {
             @ApiResponse(responseCode = "400", description = "Invalid request",
                 content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token",
+                content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "VM or plan not found",
                 content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "503", description = "No available IP addresses in the pool",
                 content = @Content(schema = @Schema(hidden = true)))

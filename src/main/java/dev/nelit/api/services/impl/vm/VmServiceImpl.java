@@ -1,9 +1,9 @@
 package dev.nelit.api.services.impl.vm;
 
-import dev.nelit.api.domain.entity.Vm;
+import dev.nelit.api.domain.entity.vm.Vm;
 import dev.nelit.api.domain.exception.vm.VmAlreadyActiveException;
+import dev.nelit.api.domain.exception.vm.VmBlockedException;
 import dev.nelit.api.domain.exception.vm.VmNotFoundException;
-import dev.nelit.api.dto.request.vm.CreateVM;
 import dev.nelit.api.dto.response.*;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
@@ -71,29 +71,39 @@ public class VmServiceImpl implements VmService {
     }
 
     @Override
-    public Mono<VmResponse> setup(CreateVM vmDTO, Long idUser) {
-        return Mono.zip(
-                planService.getById(vmDTO.idPlan()),
-                osImageService.getById(vmDTO.idOsImage()),
-                nodeService.getAll().collectList()
-            )
-            .flatMap(tuple -> {
-                PlanResponse plan = tuple.getT1();
-                OsImageResponse osImage = tuple.getT2();
-                List<NodeResponse> nodes = tuple.getT3();
-
-                List<VmManager.NodeInfo> nodeInfos = buildNodeInfos(nodes);
-
-                return Mono.fromCallable(() -> vmManagerClient.pickNode(nodeInfos))
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .flatMap(node -> ipPoolService.getFirstAvailable(node.getNodeId())
-                        .flatMap(ip -> create(idUser, plan.idPlan(), node.getNodeId(), ip)
-                            .flatMap(savedVM -> callGrpc(savedVM, plan, osImage, node, vmDTO.password(), vmDTO.sshKey()))
-                            .onErrorResume(e -> ipPoolService.unassign(ip.idIp()).then(Mono.error(e)))
-                        )
-                    );
-            }).map(vmMapper::toResponse);
+    public Mono<VmResponse> getActiveVm(Long idVm, Long idUser) {
+        return getById(idVm).flatMap(vm -> {
+            if (!vm.idUser().equals(idUser)) return Mono.error(new VmNotFoundException());
+            if (Boolean.FALSE.equals(vm.isActive())) return Mono.error(new VmNotFoundException());
+            if (Boolean.TRUE.equals(vm.isBlocked())) return Mono.error(new VmBlockedException());
+            return Mono.just(vm);
+        });
     }
+
+//    @Override
+//    public Mono<VmResponse> setup(CreateVM vmDTO, Long idUser) {
+//        return Mono.zip(
+//                planService.getById(vmDTO.idPlan()),
+//                osImageService.getById(vmDTO.idOsImage()),
+//                nodeService.getAll().collectList()
+//            )
+//            .flatMap(tuple -> {
+//                PlanResponse plan = tuple.getT1();
+//                OsImageResponse osImage = tuple.getT2();
+//                List<NodeResponse> nodes = tuple.getT3();
+//
+//                List<VmManager.NodeInfo> nodeInfos = buildNodeInfos(nodes);
+//
+//                return Mono.fromCallable(() -> vmManagerClient.pickNode(nodeInfos))
+//                    .subscribeOn(Schedulers.boundedElastic())
+//                    .flatMap(node -> ipPoolService.getFirstAvailable(node.getNodeId())
+//                        .flatMap(ip -> create(idUser, plan.idPlan(), node.getNodeId(), ip)
+//                            .flatMap(savedVM -> callGrpc(savedVM, plan, osImage, node, vmDTO.password(), vmDTO.sshKey()))
+//                            .onErrorResume(e -> ipPoolService.unassign(ip.idIp()).then(Mono.error(e)))
+//                        )
+//                    );
+//            }).map(vmMapper::toResponse);
+//    }
 
     @Override
     public Mono<Vm> create(Long idUser, Long idPlan, Long idOsImage) {
@@ -154,77 +164,59 @@ public class VmServiceImpl implements VmService {
 
     @Override
     public Mono<Void> start(Long idVm, Long idUser) {
-        return getById(idVm)
-            .flatMap(vm -> {
-                if (!vm.idUser().equals(idUser)) return Mono.error(new VmNotFoundException());
-                if (Boolean.FALSE.equals(vm.isActive())) return Mono.error(new VmNotFoundException());
+        return getActiveVm(idVm, idUser).flatMap(vm -> nodeService.getById(vm.idNode()).flatMap(node -> {
+            VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
+                .setNodeId(node.idNode())
+                .setIp(node.ipAddress())
+                .setGrpcPort(node.grpcPort())
+                .build();
 
-                return nodeService.getById(vm.idNode()).flatMap(node -> {
-                    VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                        .setNodeId(node.idNode())
-                        .setIp(node.ipAddress())
-                        .setGrpcPort(node.grpcPort())
-                        .build();
-
-                    return Mono.fromCallable(() -> vmManagerClient.startVm(vm.uuid(), nodeInfo)).then();
-                });
-            });
+            return Mono.fromCallable(() -> vmManagerClient.startVm(vm.uuid(), nodeInfo)).then();
+        }));
     }
 
     @Override
     public Mono<Void> stop(Long idVm, Long idUser) {
-        return getById(idVm)
-            .flatMap(vm -> {
-                if (!vm.idUser().equals(idUser)) return Mono.error(new VmNotFoundException());
-                if (Boolean.FALSE.equals(vm.isActive())) return Mono.error(new VmNotFoundException());
+        return getActiveVm(idVm, idUser).flatMap(vm -> nodeService.getById(vm.idNode()).flatMap(node -> {
+            VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
+                .setNodeId(node.idNode())
+                .setIp(node.ipAddress())
+                .setGrpcPort(node.grpcPort())
+                .build();
 
-                return nodeService.getById(vm.idNode()).flatMap(node -> {
-                    VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                        .setNodeId(node.idNode())
-                        .setIp(node.ipAddress())
-                        .setGrpcPort(node.grpcPort())
-                        .build();
-
-                    return Mono.fromCallable(() -> vmManagerClient.stopVm(vm.uuid(), nodeInfo)).then();
-                });
-            });
+            return Mono.fromCallable(() -> vmManagerClient.stopVm(vm.uuid(), nodeInfo)).then();
+        }));
     }
 
     @Override
     public Mono<VmStatusResponse> getStatus(Long idVm, Long idUser) {
-        return getById(idVm)
-            .flatMap(vm -> {
-                if (!vm.idUser().equals(idUser)) return Mono.error(new VmNotFoundException());
-                if (Boolean.FALSE.equals(vm.isActive())) return Mono.error(new VmNotFoundException());
+        return getActiveVm(idVm, idUser).flatMap(vm -> Mono.zip(planService.getById(vm.plan().idPlan()), nodeService.getById(vm.idNode()))
+            .flatMap(tuple -> {
+                PlanResponse plan = tuple.getT1();
+                NodeResponse node = tuple.getT2();
 
-                return Mono.zip(planService.getById(vm.plan().idPlan()), nodeService.getById(vm.idNode()))
-                    .flatMap(tuple -> {
-                        PlanResponse plan = tuple.getT1();
-                        NodeResponse node = tuple.getT2();
+                VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
+                    .setNodeId(node.idNode())
+                    .setIp(node.ipAddress())
+                    .setGrpcPort(node.grpcPort())
+                    .build();
 
-                        VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                            .setNodeId(node.idNode())
-                            .setIp(node.ipAddress())
-                            .setGrpcPort(node.grpcPort())
-                            .build();
-
-                        return Mono.fromCallable(() -> vmManagerClient.getStatus(vm.uuid(), nodeInfo))
-                            .map(result -> VmStatusResponse.builder()
-                                .vmName(vm.vmName())
-                                .uuid(vm.uuid())
-                                .status(result.getStatus())
-                                .cpuPercent(result.getCpuPercent())
-                                .memTotalMb(result.getMemTotalMb())
-                                .memUsedMb(result.getMemUsedMb())
-                                .memAvailableMb(result.getMemAvailableMb())
-                                .plan(plan)
-                                .ipAddress(vm.ipAddress())
-                                .createdAt(vm.createdAt())
-                                .expiresAt(vm.expiresAt())
-                                .build()
-                            );
-                    });
-            });
+                return Mono.fromCallable(() -> vmManagerClient.getStatus(vm.uuid(), nodeInfo))
+                    .map(result -> VmStatusResponse.builder()
+                        .vmName(vm.vmName())
+                        .uuid(vm.uuid())
+                        .status(result.getStatus())
+                        .cpuPercent(result.getCpuPercent())
+                        .memTotalMb(result.getMemTotalMb())
+                        .memUsedMb(result.getMemUsedMb())
+                        .memAvailableMb(result.getMemAvailableMb())
+                        .plan(plan)
+                        .ipAddress(vm.ipAddress())
+                        .createdAt(vm.createdAt())
+                        .expiresAt(vm.expiresAt())
+                        .build()
+                    );
+            }));
     }
 
     @Override
@@ -248,6 +240,17 @@ public class VmServiceImpl implements VmService {
         return null;
     }
 
+    @Override
+    public Mono<Void> renew(Long idVm, Integer days) {
+        return vmRepository.findById(idVm)
+            .switchIfEmpty(Mono.error(new VmNotFoundException()))
+            .flatMap(vm -> {
+                Instant newExpiry = vm.getExpiresAt().plus(days, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
+                vm.setExpiresAt(newExpiry);
+                return vmRepository.save(vm).then();
+            });
+    }
+
     private List<VmManager.NodeInfo> buildNodeInfos(List<NodeResponse> nodes) {
         return nodes.stream()
             .map(node -> VmManager.NodeInfo.newBuilder()
@@ -265,7 +268,7 @@ public class VmServiceImpl implements VmService {
             .idNode(nodeId)
             .idPlan(planId)
             .vmName(VMNameGenerator.generate("fi", 1))
-            .expiresAt(Instant.now().plus(30, ChronoUnit.DAYS))
+            .expiresAt(Instant.now().plus(30, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS))
             .build();
 
         return vmRepository.save(newVm)
@@ -295,6 +298,6 @@ public class VmServiceImpl implements VmService {
     }
 
     private VmResponse buildResponse(Vm vm, PlanResponse plan, String ipAddress) {
-        return new VmResponse(vm.getIdVM(), vm.getVmName(), vm.getIdUser(), vm.getIdNode(), vm.getUuid(), ipAddress, vm.getIsActive(), vm.getCreatedAt(), vm.getExpiresAt(), plan);
+        return new VmResponse(vm.getIdVM(), vm.getVmName(), vm.getIdUser(), vm.getIdNode(), vm.getUuid(), ipAddress, vm.getIsActive(), vm.getIsBlocked(), vm.getCreatedAt(), vm.getExpiresAt(), plan);
     }
 }

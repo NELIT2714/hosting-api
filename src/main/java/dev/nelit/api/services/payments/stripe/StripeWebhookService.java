@@ -1,4 +1,4 @@
-package dev.nelit.api.services.payments;
+package dev.nelit.api.services.payments.stripe;
 
 import reactor.core.publisher.Mono;
 
