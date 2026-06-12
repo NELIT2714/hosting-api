@@ -7,6 +7,7 @@ import dev.nelit.api.domain.exception.vm.VmNotFoundException;
 import dev.nelit.api.dto.response.*;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
+import dev.nelit.api.dto.response.VM.VncConsoleResponse;
 import dev.nelit.api.grpc.VmManagerClient;
 import dev.nelit.api.mappers.VMMapper;
 import dev.nelit.api.repository.vm.VmRepository;
@@ -15,6 +16,8 @@ import dev.nelit.api.services.orders.VpsOrderService;
 import dev.nelit.api.services.vm.VmService;
 import dev.nelit.api.util.VMNameGenerator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
@@ -22,9 +25,11 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import vm_manager.VmManager;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +44,7 @@ public class VmServiceImpl implements VmService {
     private final VmRepository vmRepository;
     private final VpsOrderService vpsOrderService;
     private final TransactionalOperator tx;
+    private final ReactiveStringRedisTemplate redis;
 
     @Override
     public Flux<VmResponse> getAllByUserId(Long idUser) {
@@ -202,20 +208,38 @@ public class VmServiceImpl implements VmService {
                     .build();
 
                 return Mono.fromCallable(() -> vmManagerClient.getStatus(vm.uuid(), nodeInfo))
-                    .map(result -> VmStatusResponse.builder()
-                        .vmName(vm.vmName())
-                        .uuid(vm.uuid())
-                        .status(result.getStatus())
-                        .cpuPercent(result.getCpuPercent())
-                        .memTotalMb(result.getMemTotalMb())
-                        .memUsedMb(result.getMemUsedMb())
-                        .memAvailableMb(result.getMemAvailableMb())
-                        .plan(plan)
-                        .ipAddress(vm.ipAddress())
-                        .createdAt(vm.createdAt())
-                        .expiresAt(vm.expiresAt())
-                        .build()
-                    );
+                    .map(result -> {
+                        VmStatusResponse.DiskStats diskStats = result.hasDisk()
+                            ? VmStatusResponse.DiskStats.builder()
+                            .readMbS(result.getDisk().getReadMbS())
+                            .writeMbS(result.getDisk().getWriteMbS())
+                            .readIops(result.getDisk().getReadIops())
+                            .writeIops(result.getDisk().getWriteIops())
+                            .build()
+                            : null;
+
+                        return VmStatusResponse.builder()
+                            .id(vm.idVm())
+                            .vmName(vm.vmName())
+                            .uuid(vm.uuid())
+                            .status(result.getStatus())
+                            .ipAddress(vm.ipAddress())
+                            .plan(plan)
+                            .createdAt(vm.createdAt())
+                            .expiresAt(vm.expiresAt())
+                            .resources(VmStatusResponse.ResourceStats.builder()
+                                .cpu(VmStatusResponse.CpuStats.builder()
+                                    .percent(result.getCpuPercent())
+                                    .build())
+                                .memory(VmStatusResponse.MemoryStats.builder()
+                                    .totalMb(result.getMemTotalMb())
+                                    .usedMb(result.getMemUsedMb())
+                                    .availableMb(result.getMemAvailableMb())
+                                    .build())
+                                .disk(diskStats)
+                                .build())
+                            .build();
+                    });
             }));
     }
 
@@ -249,6 +273,31 @@ public class VmServiceImpl implements VmService {
                 vm.setExpiresAt(newExpiry);
                 return vmRepository.save(vm).then();
             });
+    }
+
+    @Override
+    public Mono<VncConsoleResponse> getConsole(Long idVm, Long idUser) {
+        return getActiveVm(idVm, idUser)
+            .flatMap(vm -> nodeService.getById(vm.idNode())
+                .flatMap(node -> {
+                    VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
+                        .setNodeId(node.idNode())
+                        .setIp(node.ipAddress())
+                        .setGrpcPort(node.grpcPort())
+                        .build();
+
+                    return Mono.fromCallable(() -> vmManagerClient.getVmConsole(vm.uuid(), nodeInfo))
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .flatMap(console -> {
+                            String token = UUID.randomUUID().toString();
+                            String value = "localhost:" + console.getPort();
+
+                            return redis.opsForValue()
+                                .set(token, value, Duration.ofSeconds(60))
+                                .thenReturn(new VncConsoleResponse(token, node.ipAddress()));
+                        });
+                })
+            );
     }
 
     private List<VmManager.NodeInfo> buildNodeInfos(List<NodeResponse> nodes) {

@@ -95,4 +95,13 @@ public class VmManagerClient {
 
         return stub.getVM(request);
     }
+
+    public VmManager.ConsoleResponse getVmConsole(String uuid, VmManager.NodeInfo node) {
+        VmManager.VMRequest request = VmManager.VMRequest.newBuilder()
+            .setUuid(uuid)
+            .setNode(node)
+            .build();
+
+        return stub.getVMConsole(request);
+    }
 }

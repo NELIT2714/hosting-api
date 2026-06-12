@@ -33,6 +33,12 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
 jwt:
   secret: ${JWT_SECRET}
   expiration-days: ${JWT_EXPIRATION_DAYS}
@@ -46,8 +52,6 @@ payments:
   stripe:
     secret-key: ${PAYMENTS_STRIPE_SECRET_KEY}
     webhook-secret: ${PAYMENTS_STRIPE_WEBHOOK_SECRET}
-
-
 
 springdoc:
   api-docs:

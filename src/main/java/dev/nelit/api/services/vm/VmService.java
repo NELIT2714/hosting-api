@@ -3,6 +3,7 @@ package dev.nelit.api.services.vm;
 import dev.nelit.api.domain.entity.vm.Vm;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
+import dev.nelit.api.dto.response.VM.VncConsoleResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -24,4 +25,7 @@ public interface VmService {
     Mono<Void> deleteBySystem(Long idVm);
 
     Mono<Void> renew(Long idVm, Integer days);
+
+    // VNC
+    Mono<VncConsoleResponse> getConsole(Long idVm, Long idUser);
 }

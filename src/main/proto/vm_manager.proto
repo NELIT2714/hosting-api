@@ -3,12 +3,13 @@ syntax = "proto3";
 package vm_manager;
 
 service VMManager {
-  rpc PickNode (PickNodeRequest) returns (NodeInfo);
-  rpc CreateVM (CreateVMRequest) returns (VMResponse);
-  rpc DeleteVM (VMRequest)       returns (VMResponse);
-  rpc StartVM  (VMRequest)       returns (VMResponse);
-  rpc StopVM   (VMRequest)       returns (VMResponse);
-  rpc GetVM    (VMRequest)       returns (VMResponse);
+  rpc PickNode     (PickNodeRequest) returns (NodeInfo);
+  rpc CreateVM     (CreateVMRequest) returns (VMResponse);
+  rpc DeleteVM     (VMRequest)       returns (VMResponse);
+  rpc StartVM      (VMRequest)       returns (VMResponse);
+  rpc StopVM       (VMRequest)       returns (VMResponse);
+  rpc GetVM        (VMRequest)       returns (VMResponse);
+  rpc GetVMConsole (VMRequest)       returns (ConsoleResponse);
 }
 
 message NodeInfo {
@@ -22,15 +23,15 @@ message PickNodeRequest {
 }
 
 message CreateVMRequest {
-  string   vm_name             = 1;
-  int32    ram_mb              = 2;
-  int32    vcpus               = 3;
-  int32    disk_gb             = 4;
-  string   base_image          = 5;
-  NodeInfo node                = 6;
-  string ip_address            = 7;
-  string vm_password           = 8;
-  optional string ssh_key      = 9;
+  string          vm_name    = 1;
+  int32           ram_mb     = 2;
+  int32           vcpus      = 3;
+  int32           disk_gb    = 4;
+  string          base_image = 5;
+  NodeInfo        node       = 6;
+  string          ip_address = 7;
+  string          vm_password = 8;
+  optional string ssh_key    = 9;
 }
 
 message VMRequest {
@@ -38,12 +39,25 @@ message VMRequest {
   NodeInfo node = 2;
 }
 
+message DiskStats {
+  double read_mb_s  = 1;
+  double write_mb_s = 2;
+  double read_iops  = 3;
+  double write_iops = 4;
+}
+
 message VMResponse {
-  string vm_name       = 1;
-  string uuid          = 2;
-  string status        = 3;
-  double cpu_percent   = 4;
-  double mem_total_mb  = 5;
-  double mem_used_mb   = 6;
-  double mem_available_mb = 7;
+  string          vm_name          = 1;
+  string          uuid             = 2;
+  string          status           = 3;
+  double          cpu_percent      = 4;
+  double          mem_total_mb     = 5;
+  double          mem_used_mb      = 6;
+  double          mem_available_mb = 7;
+  optional DiskStats disk          = 8;
+}
+
+message ConsoleResponse {
+  string host = 1;
+  int32  port = 2;
 }

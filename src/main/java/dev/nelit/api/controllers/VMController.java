@@ -3,6 +3,7 @@ package dev.nelit.api.controllers;
 import dev.nelit.api.dto.request.vm.ActivateVM;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
+import dev.nelit.api.dto.response.VM.VncConsoleResponse;
 import dev.nelit.api.services.vm.VmService;
 import dev.nelit.api.services.orders.VpsOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.Objects;
 
 @Tag(name = "Virtual Machines", description = "VPS instance lifecycle management")
@@ -144,6 +146,27 @@ public class VMController {
             .flatMap(ctx -> {
                 Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
                 return vmService.stop(idVm, idUser);
+            });
+    }
+
+    @Operation(
+        summary = "Get VNC console token",
+        description = "Generates a one-time VNC console token for the specified virtual machine",
+        security = @SecurityRequirement(name = "bearerAuth"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Token generated successfully"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token",
+                content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "Vm not found",
+                content = @Content(schema = @Schema(hidden = true)))
+        }
+    )
+    @PostMapping("/{vm_id}/console")
+    public Mono<VncConsoleResponse> getConsole(@PathVariable("vm_id") Long idVm) {
+        return ReactiveSecurityContextHolder.getContext()
+            .flatMap(ctx -> {
+                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
+                return vmService.getConsole(idVm, idUser);
             });
     }
 }
