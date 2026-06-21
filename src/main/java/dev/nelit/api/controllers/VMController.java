@@ -1,6 +1,7 @@
 package dev.nelit.api.controllers;
 
 import dev.nelit.api.dto.request.vm.ActivateVM;
+import dev.nelit.api.dto.request.vm.ReinstallVM;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
 import dev.nelit.api.dto.response.VM.VncConsoleResponse;
@@ -14,13 +15,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Tag(name = "Virtual Machines", description = "VPS instance lifecycle management")
 @RestController
@@ -55,11 +60,7 @@ public class VMController {
     )
     @GetMapping
     public Flux<VmResponse> getAll() {
-        return ReactiveSecurityContextHolder.getContext()
-            .flatMapMany(ctx -> {
-                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return vmService.getAllByUserId(idUser);
-            });
+        return currentUserId().flatMapMany(vmService::getAllByUserId);
     }
 
     @Operation(
@@ -78,11 +79,12 @@ public class VMController {
     )
     @PostMapping("/{vm_id}/activate")
     public Mono<Void> activate(@RequestBody ActivateVM request, @PathVariable("vm_id") Long idVm) {
-        return ReactiveSecurityContextHolder.getContext()
-            .flatMap(ctx -> {
-                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return vmService.activate(idVm, idUser, request.password(), request.sshKey());
-            });
+        return currentUserId().flatMap(idUser -> vmService.activate(idVm, idUser, request));
+    }
+
+    @PostMapping("/{vm_id}/reinstall")
+    public Mono<Void> reinstall(@RequestBody ReinstallVM request, @PathVariable("vm_id") Long idVm) {
+        return currentUserId().flatMap(idUser -> vmService.reinstall(idVm, idUser, request));
     }
 
     @Operation(
@@ -100,11 +102,7 @@ public class VMController {
     )
     @GetMapping("/{vm_id}/status")
     public Mono<VmStatusResponse> get(@PathVariable("vm_id") Long idVm) {
-        return ReactiveSecurityContextHolder.getContext()
-            .flatMap(ctx -> {
-                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return vmService.getStatus(idVm, idUser);
-            });
+        return currentUserId().flatMap(idUser -> vmService.getStatus(idVm, idUser));
     }
 
     @Operation(
@@ -121,11 +119,7 @@ public class VMController {
     )
     @PostMapping("/{vm_id}/start")
     public Mono<Void> start(@PathVariable("vm_id") Long idVm) {
-        return ReactiveSecurityContextHolder.getContext()
-            .flatMap(ctx -> {
-                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return vmService.start(idVm, idUser);
-            });
+        return currentUserId().flatMap(idUser -> vmService.start(idVm, idUser));
     }
 
     @Operation(
@@ -142,11 +136,24 @@ public class VMController {
     )
     @PostMapping("/{vm_id}/stop")
     public Mono<Void> stop(@PathVariable("vm_id") Long idVm) {
-        return ReactiveSecurityContextHolder.getContext()
-            .flatMap(ctx -> {
-                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return vmService.stop(idVm, idUser);
-            });
+        return currentUserId().flatMap(idUser -> vmService.stop(idVm, idUser));
+    }
+
+    @Operation(
+        summary = "Restart a VM",
+        description = "Restarts the specified virtual machine",
+        security = @SecurityRequirement(name = "bearerAuth"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "VM restarted successfully"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token",
+                content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "VM not found",
+                content = @Content(schema = @Schema(hidden = true)))
+        }
+    )
+    @PostMapping("/{vm_id}/restart")
+    public Mono<Void> restart(@PathVariable("vm_id") Long idVm) {
+        return currentUserId().flatMap(idUser -> vmService.restart(idVm, idUser));
     }
 
     @Operation(
@@ -163,10 +170,12 @@ public class VMController {
     )
     @PostMapping("/{vm_id}/console")
     public Mono<VncConsoleResponse> getConsole(@PathVariable("vm_id") Long idVm) {
+        return currentUserId().flatMap(idUser -> vmService.getConsole(idVm, idUser));
+    }
+
+    private Mono<Long> currentUserId() {
         return ReactiveSecurityContextHolder.getContext()
-            .flatMap(ctx -> {
-                Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return vmService.getConsole(idVm, idUser);
-            });
+            .mapNotNull(SecurityContext::getAuthentication)
+            .mapNotNull(auth -> (Long) auth.getPrincipal());
     }
 }

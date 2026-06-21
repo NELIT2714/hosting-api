@@ -67,6 +67,6 @@ public class VmLifecycleServiceImpl implements VmLifecycleService {
 
     @Override
     public Mono<Void> delete(Long idVm) {
-        return vmService.deleteBySystem(idVm).then(vmLifecycleRepository.deleteById(idVm));
+        return vmService.deleteBySystem(idVm);
     }
 }

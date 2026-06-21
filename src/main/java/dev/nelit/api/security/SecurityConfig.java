@@ -27,7 +27,12 @@ public class SecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .authorizeExchange(auth -> auth
-                .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**").permitAll()
+                .pathMatchers(
+                    "/scalar/**",
+                    "/v3/api-docs/**",
+                    "/v3/api-docs.yaml"
+                ).permitAll()
+
                 .pathMatchers("/v1/webhooks/**").permitAll()
                 .pathMatchers("/v1/auth/**").permitAll()
 

@@ -11,4 +11,5 @@ import java.time.Instant;
 public interface VmRepository extends ReactiveCrudRepository<Vm, Long> {
     Flux<Vm> findAllByIdUser(Long idUser);
     Flux<Vm> findAllByExpiresAtBeforeAndIsBlockedFalseAndIsActiveTrue(Instant now);
+    Flux<Vm> findAllByExpiresAtBeforeAndIsActiveFalse(Instant expiresAt);
 }

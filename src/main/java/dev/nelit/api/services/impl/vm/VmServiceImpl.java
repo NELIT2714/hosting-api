@@ -3,20 +3,27 @@ package dev.nelit.api.services.impl.vm;
 import dev.nelit.api.domain.entity.vm.Vm;
 import dev.nelit.api.domain.exception.vm.VmAlreadyActiveException;
 import dev.nelit.api.domain.exception.vm.VmBlockedException;
+import dev.nelit.api.domain.exception.vm.VmNotActiveException;
 import dev.nelit.api.domain.exception.vm.VmNotFoundException;
-import dev.nelit.api.dto.response.*;
+import dev.nelit.api.dto.request.vm.ActivateVM;
+import dev.nelit.api.dto.request.vm.ReinstallVM;
+import dev.nelit.api.dto.response.IpPoolResponse;
+import dev.nelit.api.dto.response.NodeResponse;
+import dev.nelit.api.dto.response.OsImageResponse;
+import dev.nelit.api.dto.response.PlanResponse;
 import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
 import dev.nelit.api.dto.response.VM.VncConsoleResponse;
 import dev.nelit.api.grpc.VmManagerClient;
-import dev.nelit.api.mappers.VMMapper;
 import dev.nelit.api.repository.vm.VmRepository;
-import dev.nelit.api.services.*;
+import dev.nelit.api.services.IpPoolService;
+import dev.nelit.api.services.NodeService;
+import dev.nelit.api.services.OsImageService;
+import dev.nelit.api.services.PlanService;
 import dev.nelit.api.services.orders.VpsOrderService;
 import dev.nelit.api.services.vm.VmService;
 import dev.nelit.api.util.VMNameGenerator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -30,13 +37,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 @Service
 @RequiredArgsConstructor
 public class VmServiceImpl implements VmService {
 
     private final VmManagerClient vmManagerClient;
-    private final VMMapper vmMapper;
     private final PlanService planService;
     private final NodeService nodeService;
     private final OsImageService osImageService;
@@ -134,7 +141,7 @@ public class VmServiceImpl implements VmService {
     }
 
     @Override
-    public Mono<Void> activate(Long idVm, Long idUser, String password, String sshKey) {
+    public Mono<Void> activate(Long idVm, Long idUser, ActivateVM request) {
         return vpsOrderService.getByIdVm(idVm)
             .flatMap(order -> vmRepository.findById(idVm)
                 .switchIfEmpty(Mono.error(new VmNotFoundException()))
@@ -151,17 +158,8 @@ public class VmServiceImpl implements VmService {
                             OsImageResponse osImage = tuple.getT2();
                             NodeResponse node = tuple.getT3();
 
-                            VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                                .setNodeId(node.idNode())
-                                .setIp(node.ipAddress())
-                                .setGrpcPort(node.grpcPort())
-                                .build();
-
-                            return callGrpc(vm, plan, osImage, nodeInfo, password, sshKey)
-                                .flatMap(savedVm -> {
-                                    savedVm.setIsActive(true);
-                                    return vmRepository.save(savedVm);
-                                });
+                            vm.setIsActive(true);
+                            return callGrpcCreate(vm, plan, osImage, toNodeInfo(node), request.password(), request.sshKey());
                         });
                 })
             )
@@ -169,29 +167,40 @@ public class VmServiceImpl implements VmService {
     }
 
     @Override
-    public Mono<Void> start(Long idVm, Long idUser) {
-        return getActiveVm(idVm, idUser).flatMap(vm -> nodeService.getById(vm.idNode()).flatMap(node -> {
-            VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                .setNodeId(node.idNode())
-                .setIp(node.ipAddress())
-                .setGrpcPort(node.grpcPort())
-                .build();
+    public Mono<Void> reinstall(Long idVm, Long idUser, ReinstallVM request) {
+        return vmRepository.findById(idVm)
+            .switchIfEmpty(Mono.error(new VmNotFoundException()))
+            .flatMap(vm -> {
+                if (!vm.getIdUser().equals(idUser)) return Mono.error(new VmNotFoundException());
+                if (Boolean.FALSE.equals(vm.getIsActive())) return Mono.error(new VmNotActiveException());
 
-            return Mono.fromCallable(() -> vmManagerClient.startVm(vm.uuid(), nodeInfo)).then();
-        }));
+                return Mono.zip(
+                        osImageService.getById(request.idOsImage()),
+                        nodeService.getById(vm.getIdNode())
+                    )
+                    .flatMap(tuple -> {
+                        OsImageResponse osImage = tuple.getT1();
+                        NodeResponse node = tuple.getT2();
+
+                        return callGrpcReinstall(vm, osImage, toNodeInfo(node), request.password(), request.sshKey());
+                    });
+            })
+            .then();
+    }
+
+    @Override
+    public Mono<Void> start(Long idVm, Long idUser) {
+        return executeVmAction(idVm, idUser, vmManagerClient::startVm);
     }
 
     @Override
     public Mono<Void> stop(Long idVm, Long idUser) {
-        return getActiveVm(idVm, idUser).flatMap(vm -> nodeService.getById(vm.idNode()).flatMap(node -> {
-            VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                .setNodeId(node.idNode())
-                .setIp(node.ipAddress())
-                .setGrpcPort(node.grpcPort())
-                .build();
+        return executeVmAction(idVm, idUser, vmManagerClient::stopVm);
+    }
 
-            return Mono.fromCallable(() -> vmManagerClient.stopVm(vm.uuid(), nodeInfo)).then();
-        }));
+    @Override
+    public Mono<Void> restart(Long idVm, Long idUser) {
+        return executeVmAction(idVm, idUser, vmManagerClient::restartVm);
     }
 
     @Override
@@ -201,13 +210,7 @@ public class VmServiceImpl implements VmService {
                 PlanResponse plan = tuple.getT1();
                 NodeResponse node = tuple.getT2();
 
-                VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                    .setNodeId(node.idNode())
-                    .setIp(node.ipAddress())
-                    .setGrpcPort(node.grpcPort())
-                    .build();
-
-                return Mono.fromCallable(() -> vmManagerClient.getStatus(vm.uuid(), nodeInfo))
+                return Mono.fromCallable(() -> vmManagerClient.getStatus(vm.uuid(), toNodeInfo(node)))
                     .map(result -> {
                         VmStatusResponse.DiskStats diskStats = result.hasDisk()
                             ? VmStatusResponse.DiskStats.builder()
@@ -248,20 +251,23 @@ public class VmServiceImpl implements VmService {
         return vmRepository.findById(idVm)
             .switchIfEmpty(Mono.error(new VmNotFoundException()))
             .flatMap(vm -> nodeService.getById(vm.getIdNode())
-                .flatMap(node -> {
-                    VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                        .setNodeId(node.idNode())
-                        .setIp(node.ipAddress())
-                        .setGrpcPort(node.grpcPort())
-                        .build();
-                    return Mono.fromCallable(() -> vmManagerClient.stopVm(vm.getUuid(), nodeInfo)).then();
-                })
+                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.stopVm(vm.getUuid(), toNodeInfo(node)))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .then()
+                )
             );
     }
 
     @Override
     public Mono<Void> deleteBySystem(Long idVm) {
-        return null;
+        return vmRepository.findById(idVm)
+            .switchIfEmpty(Mono.error(new VmNotFoundException()))
+            .flatMap(vm -> nodeService.getById(vm.getIdNode())
+                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.deleteVm(vm.getUuid(), toNodeInfo(node)))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .then(vmRepository.deleteById(idVm))
+                )
+            );
     }
 
     @Override
@@ -279,24 +285,16 @@ public class VmServiceImpl implements VmService {
     public Mono<VncConsoleResponse> getConsole(Long idVm, Long idUser) {
         return getActiveVm(idVm, idUser)
             .flatMap(vm -> nodeService.getById(vm.idNode())
-                .flatMap(node -> {
-                    VmManager.NodeInfo nodeInfo = VmManager.NodeInfo.newBuilder()
-                        .setNodeId(node.idNode())
-                        .setIp(node.ipAddress())
-                        .setGrpcPort(node.grpcPort())
-                        .build();
+                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.getVmConsole(vm.uuid(), toNodeInfo(node)))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .flatMap(console -> {
+                        String token = UUID.randomUUID().toString();
+                        String value = "localhost:" + console.getPort();
 
-                    return Mono.fromCallable(() -> vmManagerClient.getVmConsole(vm.uuid(), nodeInfo))
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .flatMap(console -> {
-                            String token = UUID.randomUUID().toString();
-                            String value = "localhost:" + console.getPort();
-
-                            return redis.opsForValue()
-                                .set(token, value, Duration.ofSeconds(60))
-                                .thenReturn(new VncConsoleResponse(token, node.ipAddress()));
-                        });
-                })
+                        return redis.opsForValue()
+                            .set(token, value, Duration.ofSeconds(60))
+                            .thenReturn(new VncConsoleResponse(token, node.ipAddress()));
+                    }))
             );
     }
 
@@ -325,28 +323,51 @@ public class VmServiceImpl implements VmService {
             .as(tx::transactional);
     }
 
-    private Mono<Vm> callGrpc(Vm savedVm, PlanResponse plan, OsImageResponse osImage, VmManager.NodeInfo pickedNode, String password, String sshKey) {
-        return ipPoolService.getByIdVM(savedVm.getIdVM())
-            .flatMap(ipPool -> Mono.fromCallable(() -> vmManagerClient.createVm(
-                        savedVm.getVmName(),
-                        plan.ramMb(),
-                        plan.vcpus(),
-                        plan.diskGb(),
-                        osImage.fileName(),
-                        ipPool.ipAddress(),
-                        password,
-                        sshKey,
-                        pickedNode
-                    ))
-                    .subscribeOn(Schedulers.boundedElastic())
+    private Mono<Vm> callGrpcCreate(Vm vm, PlanResponse plan, OsImageResponse osImage,
+                                    VmManager.NodeInfo node, String password, String sshKey) {
+        return ipPoolService.getByIdVM(vm.getIdVM())
+            .flatMap(ipPool -> Mono.fromCallable(() ->
+                vmManagerClient.createVm(vm.getVmName(), plan.ramMb(), plan.vcpus(),
+                    plan.diskGb(), osImage.fileName(), ipPool.ipAddress(), password, sshKey, node)
+                )
+                .subscribeOn(Schedulers.boundedElastic())
             )
             .flatMap(grpcResponse -> {
-                savedVm.setUuid(grpcResponse.getUuid());
-                return vmRepository.save(savedVm);
+                vm.setUuid(grpcResponse.getUuid());
+                return vmRepository.save(vm);
             });
+    }
+
+    private Mono<Vm> callGrpcReinstall(Vm vm, OsImageResponse osImage, VmManager.NodeInfo node, String password, String sshKey) {
+        return ipPoolService.getByIdVM(vm.getIdVM())
+            .flatMap(ipPool -> Mono.fromCallable(() ->
+                vmManagerClient.reinstallVm(vm.getUuid(), osImage.fileName(),
+                    ipPool.ipAddress(), password, sshKey, node)
+                )
+                .subscribeOn(Schedulers.boundedElastic())
+            )
+            .flatMap(_ -> vmRepository.save(vm));
     }
 
     private VmResponse buildResponse(Vm vm, PlanResponse plan, String ipAddress) {
         return new VmResponse(vm.getIdVM(), vm.getVmName(), vm.getIdUser(), vm.getIdNode(), vm.getUuid(), ipAddress, vm.getIsActive(), vm.getIsBlocked(), vm.getCreatedAt(), vm.getExpiresAt(), plan);
+    }
+
+    private Mono<Void> executeVmAction(Long idVm, Long idUser, BiFunction<String, VmManager.NodeInfo, VmManager.VMResponse> action) {
+        return getActiveVm(idVm, idUser).flatMap(vm ->
+            nodeService.getById(vm.idNode()).flatMap(node ->
+                Mono.fromCallable(() -> action.apply(vm.uuid(), toNodeInfo(node)))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .then()
+            )
+        );
+    }
+
+    private VmManager.NodeInfo toNodeInfo(NodeResponse node) {
+        return VmManager.NodeInfo.newBuilder()
+            .setNodeId(node.idNode())
+            .setIp(node.ipAddress())
+            .setGrpcPort(node.grpcPort())
+            .build();
     }
 }

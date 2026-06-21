@@ -10,6 +10,6 @@ import java.time.Instant;
 
 @Repository
 public interface VmLifecycleRepository extends ReactiveCrudRepository<VmLifecycle, Long> {
-    Flux<VmLifecycle> findAllByDeleteAtBefore(Instant now);
+    Flux<VmLifecycle> findAllByDeleteAtBefore(Instant deleteAt);
     Mono<Void> deleteByIdVm(Long idVm);
 }

@@ -12,3 +12,6 @@ spring:
     error:
       include-message: always
       include-binding-errors: always
+
+scalar:
+  enabled: true

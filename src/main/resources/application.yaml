@@ -9,6 +9,7 @@ logging:
       max-file-size: 10MB
       max-history: 30
 
+
 spring:
   profiles:
     active: dev
@@ -57,3 +58,6 @@ springdoc:
   api-docs:
     enabled: true
     path: /v3/api-docs
+
+scalar:
+  enabled: false
