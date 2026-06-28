@@ -1,17 +1,10 @@
 package dev.nelit.api.grpc;
 
-import io.grpc.ManagedChannel;
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import vm_manager.VMManagerGrpc;
 import vm_manager.VmManager;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
 @Component

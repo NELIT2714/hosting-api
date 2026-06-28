@@ -1,5 +1,8 @@
 server:
   port: 4000
+  netty:
+    connection-timeout: 20s
+    idle-timeout: 60s
 
 logging:
   file:
@@ -8,7 +11,6 @@ logging:
     rollingpolicy:
       max-file-size: 10MB
       max-history: 30
-
 
 spring:
   profiles:
@@ -33,6 +35,11 @@ spring:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+    pool:
+      initial-size: 10
+      max-size: 30
+      max-idle-time: 30m
+      validation-query: SELECT 1
 
   data:
     redis:
@@ -61,3 +68,19 @@ springdoc:
 
 scalar:
   enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, loggers
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

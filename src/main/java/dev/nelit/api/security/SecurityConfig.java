@@ -1,6 +1,8 @@
 package dev.nelit.api.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.security.autoconfigure.actuate.web.reactive.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,6 +29,9 @@ public class SecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .authorizeExchange(auth -> auth
+                .matchers(EndpointRequest.to(HealthEndpoint.class)).permitAll()
+                .matchers(EndpointRequest.toAnyEndpoint()).authenticated()
+
                 .pathMatchers(
                     "/scalar/**",
                     "/v3/api-docs/**",

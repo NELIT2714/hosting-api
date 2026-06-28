@@ -64,7 +64,7 @@ public class VMController {
     }
 
     @Operation(
-        summary = "Activate a Vm",
+        summary = "Activate a VM",
         description = "Activates the specified virtual machine by setting a root password and/or SSH key.",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
@@ -82,13 +82,27 @@ public class VMController {
         return currentUserId().flatMap(idUser -> vmService.activate(idVm, idUser, request));
     }
 
+    @Operation(
+        summary = "Reinstall a VM",
+        description = "Reinstalls the specified virtual machine with a new OS image, wiping its disk(s) and setting a new root password and/or SSH key.",
+        security = @SecurityRequirement(name = "bearerAuth"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Vm reinstall started successfully"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token",
+                content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "Vm not found",
+                content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "400", description = "Vm is not active",
+                content = @Content(schema = @Schema(hidden = true)))
+        }
+    )
     @PostMapping("/{vm_id}/reinstall")
     public Mono<Void> reinstall(@RequestBody ReinstallVM request, @PathVariable("vm_id") Long idVm) {
         return currentUserId().flatMap(idUser -> vmService.reinstall(idVm, idUser, request));
     }
 
     @Operation(
-        summary = "Get Vm status",
+        summary = "Get VM status",
         description = "Returns current status and resource usage of the specified virtual machine",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
@@ -106,7 +120,7 @@ public class VMController {
     }
 
     @Operation(
-        summary = "Start a Vm",
+        summary = "Start a VM",
         description = "Starts the specified virtual machine",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
@@ -123,7 +137,7 @@ public class VMController {
     }
 
     @Operation(
-        summary = "Stop a Vm",
+        summary = "Stop a VM",
         description = "Stops the specified virtual machine",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
