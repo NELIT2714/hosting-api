@@ -49,7 +49,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration-days: ${JWT_EXPIRATION_DAYS}
+  token-expiration-minutes: ${JWT_TOKEN_EXPIRATION_MINUTES}
+  refresh-expiration-days: ${JWT_REFRESH_EXPIRATION_DAYS}
 
 grpc:
   vm-manager:

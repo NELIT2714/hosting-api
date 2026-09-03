@@ -276,3 +276,24 @@ CREATE TABLE IF NOT EXISTS receipts
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+
+
+-- SESSIONS
+CREATE TABLE IF NOT EXISTS sessions
+(
+    id_session           SERIAL NOT NULL,
+    id_user              BIGINT NOT NULL,
+    refresh_token_hash   VARCHAR(255) NOT NULL,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at           TIMESTAMPTZ NOT NULL,
+    revoked_at           TIMESTAMPTZ,
+    revoke_reason        VARCHAR(30),
+
+    PRIMARY KEY (id_session),
+    UNIQUE (refresh_token_hash),
+
+    FOREIGN KEY (id_user) REFERENCES users(id_user)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);

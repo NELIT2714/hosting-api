@@ -8,11 +8,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 @Tag(name = "Auth", description = "Authentication and session management")
 @RestController
@@ -20,29 +23,32 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/auth")
 public class AuthController {
 
+    private static final String REFRESH_COOKIE = "refresh_token";
+    private static final Duration REFRESH_TTL = Duration.ofDays(30);
+
     private final AuthService authService;
     private final CookieService cookieService;
 
-    @Operation(
-        summary = "Log in",
-        description = "Authenticates a user with email and password. On success, sets an HTTP-only cookie containing the JWT token.",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "Authenticated successfully — JWT cookie set"),
-            @ApiResponse(responseCode = "400", description = "Validation failed",
-                content = @Content(schema = @Schema(hidden = true))),
-            @ApiResponse(responseCode = "401", description = "Invalid email or password",
-                content = @Content(schema = @Schema(hidden = true)))
-        }
-    )
-    @PostMapping("/login")
-    @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> login(@RequestBody Login loginDTO, ServerWebExchange exchange) {
-        return authService.login(loginDTO)
-            .flatMap(token -> {
-                cookieService.setTokenCookie(exchange, token);
-                return exchange.getResponse().setComplete();
-            });
-    }
+//    @Operation(
+//        summary = "Log in",
+//        description = "Authenticates a user with email and password. On success, sets an HTTP-only cookie containing the JWT token.",
+//        responses = {
+//            @ApiResponse(responseCode = "200", description = "Authenticated successfully — JWT cookie set"),
+//            @ApiResponse(responseCode = "400", description = "Validation failed",
+//                content = @Content(schema = @Schema(hidden = true))),
+//            @ApiResponse(responseCode = "401", description = "Invalid email or password",
+//                content = @Content(schema = @Schema(hidden = true)))
+//        }
+//    )
+//    @PostMapping("/login")
+//    @ResponseStatus(HttpStatus.OK)
+//    public Mono<Void> login(@RequestBody @Valid Login loginDTO, ServerWebExchange exchange) {
+//        return authService.login(loginDTO)
+//            .flatMap(token -> {
+//                cookieService.setTokenCookie(exchange, token);
+//                return exchange.getResponse().setComplete();
+//            });
+//    }
 
 //    @DeleteMapping("/logout")
 //    @ResponseStatus(HttpStatus.OK)
