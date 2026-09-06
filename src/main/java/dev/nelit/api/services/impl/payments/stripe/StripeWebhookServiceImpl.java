@@ -5,12 +5,7 @@ import com.google.gson.JsonParser;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
 import dev.nelit.api.config.StripeProperties;
-import dev.nelit.api.enums.PaymentStatus;
-import dev.nelit.api.services.impl.orders.VpsRenewalOrderServiceImpl;
-import dev.nelit.api.services.impl.vm.VmLifecycleServiceImpl;
-import dev.nelit.api.services.impl.vm.VmServiceImpl;
-import dev.nelit.api.services.impl.orders.VpsOrderServiceImpl;
-import dev.nelit.api.services.payments.PaymentService;
+import dev.nelit.api.services.payments.PaymentCompletionService;
 import dev.nelit.api.services.payments.stripe.StripeWebhookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,60 +16,26 @@ import reactor.core.publisher.Mono;
 public class StripeWebhookServiceImpl implements StripeWebhookService {
 
     private final StripeProperties stripeProperties;
-    private final PaymentService paymentService;
-    private final VmServiceImpl vmService;
-    private final VpsOrderServiceImpl vpsOrderService;
-    private final VpsRenewalOrderServiceImpl vpsRenewalOrderService;
-    private final VmLifecycleServiceImpl vmLifecycleService;
+    private final PaymentCompletionService paymentCompletionService;
 
     @Override
     public Mono<Void> handleEvent(String rawBody, String sigHeader) {
         return Mono.fromCallable(() -> Webhook.constructEvent(rawBody, sigHeader, stripeProperties.getWebhookSecret()))
             .flatMap(event -> switch (event.getType()) {
-                case "checkout.session.completed" -> handleCheckoutCompleted(event);
-                case "payment_intent.payment_failed" -> handlePaymentFailed(event);
+                case "checkout.session.completed" -> handleCompleted(event);
+                case "payment_intent.payment_failed" -> handleFailed(event);
                 default -> Mono.empty();
             });
     }
 
-    private Mono<Void> handleCheckoutCompleted(Event event) {
+    private Mono<Void> handleCompleted(Event event) {
         JsonObject node = parseRawJson(event);
-        Long idPayment = extractPaymentId(node);
-        String gatewayPaymentId = extractField(node, "payment_intent");
-
-        JsonObject metadata = node.getAsJsonObject("metadata");
-        Long idUser = Long.parseLong(metadata.get("user_id").getAsString());
-        String type = metadata.get("type").getAsString();
-
-        return paymentService.update(idPayment, PaymentStatus.SUCCEEDED, gatewayPaymentId)
-            .flatMap(_ -> switch (type) {
-                case "VPS_PURCHASE" -> handleVpsPurchase(idUser, idPayment);
-                case "VPS_RENEWAL" -> handleVpsRenewal(idPayment);
-                default -> Mono.error(new RuntimeException("unknown payment type: " + type));
-            });
+        return paymentCompletionService.complete(extractPaymentId(node), extractField(node, "payment_intent"));
     }
 
-    private Mono<Void> handlePaymentFailed(Event event) {
+    private Mono<Void> handleFailed(Event event) {
         JsonObject node = parseRawJson(event);
-        Long idPayment = extractPaymentId(node);
-        String gatewayPaymentId = extractField(node, "id");
-        return paymentService.update(idPayment, PaymentStatus.FAILED, gatewayPaymentId).then();
-    }
-
-    private Mono<Void> handleVpsPurchase(Long idUser, Long idPayment) {
-        return vpsOrderService.getByIdPayment(idPayment)
-            .flatMap(order -> vmService.create(idUser, order.getIdPlan(), order.getIdOsImage())
-                .flatMap(vm -> vpsOrderService.setVm(order.getIdOrder(), vm.getIdVM()))
-            )
-            .then();
-    }
-
-    private Mono<Void> handleVpsRenewal(Long idPayment) {
-        return vpsRenewalOrderService.getByIdPayment(idPayment)
-            .flatMap(order -> vmService.renew(order.getIdVm(), order.getDays())
-                .then(vmLifecycleService.unblockIfBlocked(order.getIdVm()))
-            )
-            .then();
+        return paymentCompletionService.fail(extractPaymentId(node), extractField(node, "id"));
     }
 
     private JsonObject parseRawJson(Event event) {

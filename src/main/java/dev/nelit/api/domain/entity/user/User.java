@@ -23,6 +23,9 @@ public class User {
     @Column("password_hash")
     private String passwordHash;
 
+    @Column("deleted_at")
+    private Instant deletedAt;
+
     @Column("created_at")
     @Builder.Default
     private Instant createdAt = Instant.now();

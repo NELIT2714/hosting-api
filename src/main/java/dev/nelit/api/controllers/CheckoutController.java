@@ -57,8 +57,7 @@ public class CheckoutController {
                         if (!hasIp) return Mono.error(new NoAvailableAddressesException());
                         return checkoutService.checkout(idUser, request);
                     });
-            })
-            .map(url -> new CheckoutResponse(url.url()));
+            });
     }
 
 }

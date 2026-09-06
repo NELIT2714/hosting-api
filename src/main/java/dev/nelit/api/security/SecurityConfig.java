@@ -74,6 +74,11 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.POST, "/v1/os-images").hasAuthority("PERMISSION_OS_IMAGE_CREATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/os-images/**").hasAuthority("PERMISSION_OS_IMAGE_DELETE")
 
+                // Promo Codes
+                .pathMatchers(HttpMethod.POST, "/v1/promo-codes").hasAuthority("PERMISSION_PROMO_CODE_CREATE")
+
+                // TODO: delete this
+
                 .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
                 .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
                 .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()

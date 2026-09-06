@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -58,11 +60,17 @@ public class UserServiceImpl implements UserService {
     public Mono<Void> delete(Long idUser) {
         return userRepository.findById(idUser)
             .switchIfEmpty(Mono.error(new UserNotFoundException()))
-            .flatMap(userRepository::delete);
+            .flatMap(user -> {
+                user.setDeletedAt(Instant.now());
+                return userRepository.save(user);
+            })
+            .then();
     }
 
     @Override
     public Mono<User> findByEmail(String email) {
-        return userRepository.findByEmail(email).switchIfEmpty(Mono.error(new UserNotFoundException()));
+        return userRepository.findByEmail(email)
+            .filter(user -> user.getDeletedAt() == null)
+            .switchIfEmpty(Mono.error(new UserNotFoundException()));
     }
 }

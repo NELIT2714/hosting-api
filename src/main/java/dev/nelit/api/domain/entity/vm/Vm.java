@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -30,7 +31,7 @@ public class Vm {
     private String vmName;
 
     @Column("uuid")
-    private String uuid;
+    private UUID uuid;
 
     @Column("is_active")
     @Builder.Default
