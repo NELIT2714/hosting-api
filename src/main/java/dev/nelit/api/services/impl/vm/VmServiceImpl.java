@@ -8,7 +8,7 @@ import dev.nelit.api.domain.exception.vm.VmNotFoundException;
 import dev.nelit.api.dto.request.vm.ActivateVM;
 import dev.nelit.api.dto.request.vm.ReinstallVM;
 import dev.nelit.api.dto.response.IpPoolResponse;
-import dev.nelit.api.dto.response.NodeResponse;
+import dev.nelit.api.dto.response.node.NodeResponse;
 import dev.nelit.api.dto.response.OsImageResponse;
 import dev.nelit.api.dto.response.PlanResponse;
 import dev.nelit.api.dto.response.VM.VmResponse;

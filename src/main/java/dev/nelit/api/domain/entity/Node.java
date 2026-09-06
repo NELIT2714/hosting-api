@@ -36,4 +36,29 @@ public class Node {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+    @Column("cert_fingerprint")
+    private String certFingerprint;
+
+    @Column("cert_issued_at")
+    private Instant certIssuedAt;
+
+    @Column("cert_expires_at")
+    private Instant certExpiresAt;
+
+    @Column("last_heartbeat_at")
+    private Instant lastHeartbeatAt;
+
+    @Column("revoked_at")
+    private Instant revokedAt;
+
+    @Column("revoke_reason")
+    private String revokeReason;
+
+    public boolean isEnrolled() {
+        return certFingerprint != null;
+    }
+
+    public boolean isRevoked() {
+        return revokedAt != null;
+    }
 }
