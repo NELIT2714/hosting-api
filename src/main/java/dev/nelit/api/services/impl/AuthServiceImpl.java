@@ -1,5 +1,6 @@
 package dev.nelit.api.services.impl;
 
+import dev.nelit.api.domain.exception.admin.AdminNotFoundException;
 import dev.nelit.api.domain.exception.user.InvalidPasswordException;
 import dev.nelit.api.dto.request.user.Login;
 import dev.nelit.api.dto.response.AuthTokens;
@@ -52,6 +53,6 @@ public class AuthServiceImpl implements AuthService {
     private Mono<String> resolveRole(Long idUser) {
         return adminService.getByUserId(idUser)
             .map(_ -> "ADMIN")
-            .switchIfEmpty(Mono.just("USER"));
+            .onErrorResume(AdminNotFoundException.class, _ -> Mono.just("USER"));
     }
 }

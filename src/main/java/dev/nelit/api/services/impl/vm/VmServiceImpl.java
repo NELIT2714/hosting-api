@@ -148,6 +148,7 @@ public class VmServiceImpl implements VmService {
                 .flatMap(vm -> {
                     if (!vm.getIdUser().equals(idUser)) return Mono.error(new VmNotFoundException());
                     if (Boolean.TRUE.equals(vm.getIsActive())) return Mono.error(new VmAlreadyActiveException());
+
                     return Mono.zip(
                             planService.getById(vm.getIdPlan()),
                             osImageService.getById(order.getIdOsImage()),
@@ -173,6 +174,7 @@ public class VmServiceImpl implements VmService {
             .flatMap(vm -> {
                 if (!vm.getIdUser().equals(idUser)) return Mono.error(new VmNotFoundException());
                 if (Boolean.FALSE.equals(vm.getIsActive())) return Mono.error(new VmNotActiveException());
+                if (Boolean.TRUE.equals(vm.getIsBlocked())) return Mono.error(new VmBlockedException());
 
                 return Mono.zip(
                         osImageService.getById(request.idOsImage()),
@@ -251,7 +253,7 @@ public class VmServiceImpl implements VmService {
         return vmRepository.findById(idVm)
             .switchIfEmpty(Mono.error(new VmNotFoundException()))
             .flatMap(vm -> nodeService.getById(vm.getIdNode())
-                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.stopVm(vm.getUuid(), toNodeInfo(node)))
+                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.stopVm(vm.getUuid().toString(), toNodeInfo(node)))
                     .subscribeOn(Schedulers.boundedElastic())
                     .then()
                 )
@@ -263,7 +265,7 @@ public class VmServiceImpl implements VmService {
         return vmRepository.findById(idVm)
             .switchIfEmpty(Mono.error(new VmNotFoundException()))
             .flatMap(vm -> nodeService.getById(vm.getIdNode())
-                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.deleteVm(vm.getUuid(), toNodeInfo(node)))
+                .flatMap(node -> Mono.fromCallable(() -> vmManagerClient.deleteVm(vm.getUuid().toString(), toNodeInfo(node)))
                     .subscribeOn(Schedulers.boundedElastic())
                     .then(vmRepository.deleteById(idVm))
                 )
@@ -333,7 +335,7 @@ public class VmServiceImpl implements VmService {
                 .subscribeOn(Schedulers.boundedElastic())
             )
             .flatMap(grpcResponse -> {
-                vm.setUuid(grpcResponse.getUuid());
+                vm.setUuid(UUID.fromString(grpcResponse.getUuid()));
                 return vmRepository.save(vm);
             });
     }
@@ -341,7 +343,7 @@ public class VmServiceImpl implements VmService {
     private Mono<Vm> callGrpcReinstall(Vm vm, OsImageResponse osImage, VmManager.NodeInfo node, String password, String sshKey) {
         return ipPoolService.getByIdVM(vm.getIdVM())
             .flatMap(ipPool -> Mono.fromCallable(() ->
-                vmManagerClient.reinstallVm(vm.getUuid(), osImage.fileName(),
+                vmManagerClient.reinstallVm(vm.getUuid().toString(), osImage.fileName(),
                     ipPool.ipAddress(), password, sshKey, node)
                 )
                 .subscribeOn(Schedulers.boundedElastic())
@@ -350,7 +352,7 @@ public class VmServiceImpl implements VmService {
     }
 
     private VmResponse buildResponse(Vm vm, PlanResponse plan, String ipAddress) {
-        return new VmResponse(vm.getIdVM(), vm.getVmName(), vm.getIdUser(), vm.getIdNode(), vm.getUuid(), ipAddress, vm.getIsActive(), vm.getIsBlocked(), vm.getCreatedAt(), vm.getExpiresAt(), plan);
+        return new VmResponse(vm.getIdVM(), vm.getVmName(), vm.getIdUser(), vm.getIdNode(), vm.getUuid().toString(), ipAddress, vm.getIsActive(), vm.getIsBlocked(), vm.getCreatedAt(), vm.getExpiresAt(), plan);
     }
 
     private Mono<Void> executeVmAction(Long idVm, Long idUser, BiFunction<String, VmManager.NodeInfo, VmManager.VMResponse> action) {

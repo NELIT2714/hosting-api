@@ -19,7 +19,7 @@ public class UserTelegram {
     private Long idUser;
 
     @Column("telegram_id")
-    private String telegramId;
+    private Long telegramId;
 
     @Column("first_name")
     private String firstName;
