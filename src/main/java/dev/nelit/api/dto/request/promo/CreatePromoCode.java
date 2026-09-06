@@ -8,7 +8,6 @@ import java.time.Instant;
 
 public record CreatePromoCode(
     @Nullable
-    @NotBlank
     @JsonProperty("promo_code")
     String promoCode,
 
