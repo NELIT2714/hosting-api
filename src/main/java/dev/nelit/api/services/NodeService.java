@@ -3,7 +3,7 @@ package dev.nelit.api.services;
 import dev.nelit.api.dto.request.node.CreateNode;
 import dev.nelit.api.dto.request.node.UpdateNode;
 import dev.nelit.api.dto.response.LocationResponse;
-import dev.nelit.api.dto.response.NodeResponse;
+import dev.nelit.api.dto.response.node.NodeResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

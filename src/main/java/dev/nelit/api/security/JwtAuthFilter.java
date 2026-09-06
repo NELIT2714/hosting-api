@@ -27,7 +27,7 @@ public class JwtAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        HttpCookie tokenCookie = exchange.getRequest().getCookies().getFirst("token");
+        HttpCookie tokenCookie = exchange.getRequest().getCookies().getFirst("access_token");
         if (tokenCookie == null) return chain.filter(exchange);
 
         String token = tokenCookie.getValue();

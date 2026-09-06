@@ -18,10 +18,8 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration-days}")
-    private Long expirationDays;
-
-    private static final long DAY_IN_MS = 24 * 60 * 60 * 1000L;
+    @Value("${jwt.token-expiration-minutes}")
+    private Long tokenExpirationMinutes;
 
     @Override
     public String generate(Long idUser, String role) {
@@ -29,7 +27,7 @@ public class JwtServiceImpl implements JwtService {
             .subject(String.valueOf(idUser))
             .claim("role", role)
             .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + expirationDays * DAY_IN_MS))
+            .expiration(new Date(System.currentTimeMillis() + tokenExpirationMinutes * 60 * 1000L))
             .signWith(getSigningKey())
             .compact();
     }

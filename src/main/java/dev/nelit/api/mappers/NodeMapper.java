@@ -2,7 +2,7 @@ package dev.nelit.api.mappers;
 
 import dev.nelit.api.domain.entity.Node;
 import dev.nelit.api.dto.request.node.UpdateNode;
-import dev.nelit.api.dto.response.NodeResponse;
+import dev.nelit.api.dto.response.node.NodeResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;

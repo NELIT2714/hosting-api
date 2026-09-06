@@ -1,5 +1,6 @@
 package dev.nelit.api;
 
+import dev.nelit.api.config.PkiProperties;
 import dev.nelit.api.config.StripeProperties;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
@@ -10,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.TimeZone;
 
 @SpringBootApplication
-@EnableConfigurationProperties(StripeProperties.class)
+@EnableConfigurationProperties({StripeProperties.class, PkiProperties.class})
 @EnableScheduling
 public class ApiApplication {
 

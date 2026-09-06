@@ -6,7 +6,7 @@ import dev.nelit.api.domain.exception.node.NodeNotFoundException;
 import dev.nelit.api.dto.request.node.CreateNode;
 import dev.nelit.api.dto.request.node.UpdateNode;
 import dev.nelit.api.dto.response.LocationResponse;
-import dev.nelit.api.dto.response.NodeResponse;
+import dev.nelit.api.dto.response.node.NodeResponse;
 import dev.nelit.api.mappers.NodeMapper;
 import dev.nelit.api.repository.NodeRepository;
 import dev.nelit.api.services.NodeService;
@@ -15,8 +15,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

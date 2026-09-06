@@ -49,7 +49,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration-days: ${JWT_EXPIRATION_DAYS}
+  token-expiration-minutes: ${JWT_TOKEN_EXPIRATION_MINUTES}
+  refresh-expiration-days: ${JWT_REFRESH_EXPIRATION_DAYS}
 
 grpc:
   vm-manager:
@@ -60,6 +61,13 @@ payments:
   stripe:
     secret-key: ${PAYMENTS_STRIPE_SECRET_KEY}
     webhook-secret: ${PAYMENTS_STRIPE_WEBHOOK_SECRET}
+
+pki:
+#  api-cert: /etc/hosting/certs/api/tls.crt
+#  api-key: /etc/hosting/certs/api/tls.key
+#  ca-cert: /etc/hosting/certs/api/ca.crt
+#  ca-key: /etc/hosting/certs/ca/ca.key
+  node-cert-validity-days: 90
 
 springdoc:
   api-docs:

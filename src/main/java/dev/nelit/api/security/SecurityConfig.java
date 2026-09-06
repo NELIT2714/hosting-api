@@ -52,7 +52,9 @@ public class SecurityConfig {
 
                 // Nodes
                 .pathMatchers(HttpMethod.GET, "/v1/nodes/locations").permitAll()
+                .pathMatchers(HttpMethod.POST, "/v1/nodes/register").permitAll()
                 .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
+                .pathMatchers(HttpMethod.POST, "/v1/nodes/*/enrollment-token").hasAuthority("PERMISSION_NODE_CREATE")
                 .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
 

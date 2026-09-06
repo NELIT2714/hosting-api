@@ -36,13 +36,20 @@ CREATE TABLE IF NOT EXISTS users_telegram
 -- NODES
 CREATE TABLE IF NOT EXISTS nodes
 (
-    id_node        SERIAL NOT NULL,
-    node_name      VARCHAR(64) NOT NULL,
-    ip_address     VARCHAR(255) NOT NULL,
-    grpc_port      INTEGER NOT NULL,
-    location       VARCHAR(64),
-    is_active      BOOLEAN DEFAULT TRUE,
-    created_at     TIMESTAMP NOT NULL DEFAULT now(),
+    id_node             SERIAL NOT NULL,
+    node_name           VARCHAR(64) NOT NULL,
+    ip_address          VARCHAR(255),           -- nullable, заполняется heartbeat-ом ноды
+    grpc_port           INTEGER,                -- nullable, заполняется heartbeat-ом ноды
+    location            VARCHAR(64),
+    is_active           BOOLEAN DEFAULT TRUE,
+    created_at          TIMESTAMP NOT NULL DEFAULT now(),
+
+    cert_fingerprint    VARCHAR(64),
+    cert_issued_at      TIMESTAMP,
+    cert_expires_at     TIMESTAMP,
+    last_heartbeat_at   TIMESTAMP,
+    revoked_at          TIMESTAMP,
+    revoke_reason       VARCHAR(30),
 
     PRIMARY KEY (id_node),
     UNIQUE (node_name)
@@ -273,6 +280,27 @@ CREATE TABLE IF NOT EXISTS receipts
     UNIQUE (id_payment),
 
     FOREIGN KEY (id_payment) REFERENCES payments(id_payment)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
+-- SESSIONS
+CREATE TABLE IF NOT EXISTS sessions
+(
+    id_session           SERIAL NOT NULL,
+    id_user              BIGINT NOT NULL,
+    refresh_token_hash   VARCHAR(255) NOT NULL,
+    created_at           TIMESTAMP NOT NULL DEFAULT now(),
+    expires_at           TIMESTAMP NOT NULL,
+    revoked_at           TIMESTAMP,
+    revoke_reason        VARCHAR(30),
+
+    PRIMARY KEY (id_session),
+    UNIQUE (refresh_token_hash),
+
+    FOREIGN KEY (id_user) REFERENCES users(id_user)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

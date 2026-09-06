@@ -15,3 +15,9 @@ spring:
 
 scalar:
   enabled: true
+
+pki:
+  api-cert: C:/hosting/certs/api/tls.crt
+  api-key: C:/hosting/certs/api/tls.key
+  ca-cert: C:/hosting/certs/ca.crt
+  ca-key: C:/hosting/certs/ca.key
