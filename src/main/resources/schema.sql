@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS nodes
 (
     id_node             SERIAL NOT NULL,
     node_name           VARCHAR(64) NOT NULL,
-    ip_address          VARCHAR(255),           -- nullable, заполняется heartbeat-ом ноды
-    grpc_port           INTEGER,                -- nullable, заполняется heartbeat-ом ноды
+    ip_address          VARCHAR(255),
+    grpc_port           INTEGER,
     location            VARCHAR(64),
     is_active           BOOLEAN DEFAULT TRUE,
     created_at          TIMESTAMP NOT NULL DEFAULT now(),
@@ -183,8 +183,8 @@ CREATE TABLE IF NOT EXISTS payments
     gateway_payment_id      VARCHAR(255),
     amount                  DECIMAL(10, 2) NOT NULL,
     currency                VARCHAR(3) NOT NULL DEFAULT 'EUR',
-    status                  VARCHAR(50) NOT NULL,   -- PENDING, SUCCEEDED, FAILED
-    type                    VARCHAR(50) NOT NULL,   -- VPS_PURCHASE, DISK_ADDON, IP_ADDON
+    status                  VARCHAR(50) NOT NULL,
+    type                    VARCHAR(50) NOT NULL,
     created_at              TIMESTAMP NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_payment),

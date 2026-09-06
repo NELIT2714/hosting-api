@@ -1,18 +1,14 @@
 package dev.nelit.api.controllers;
 
-import dev.nelit.api.domain.entity.Node;
-import dev.nelit.api.domain.exception.node.NodeNotFoundException;
 import dev.nelit.api.dto.request.node.CreateNode;
 import dev.nelit.api.dto.request.node.RegisterNode;
 import dev.nelit.api.dto.request.node.UpdateNode;
 import dev.nelit.api.dto.response.LocationResponse;
 import dev.nelit.api.dto.response.node.NodeResponse;
 import dev.nelit.api.dto.response.node.NodeTokenResponse;
-import dev.nelit.api.pki.CertificateAuthority;
-import dev.nelit.api.repository.NodeRepository;
+import dev.nelit.api.dto.response.node.RegisterResponse;
 import dev.nelit.api.services.EnrollmentTokenService;
 import dev.nelit.api.services.NodeService;
-import dev.nelit.api.util.PemUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,14 +19,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.security.MessageDigest;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.Base64;
 
 @Tag(name = "Nodes", description = "Physical/virtual node management, PKI enrollment and mTLS registration")
 @RestController
@@ -40,8 +32,6 @@ public class NodeController {
 
     private final NodeService nodeService;
     private final EnrollmentTokenService tokenService;
-    private final CertificateAuthority ca;
-    private final NodeRepository nodeRepository;
 
     @Operation(
         summary = "Get available locations",
@@ -140,10 +130,8 @@ public class NodeController {
     @PostMapping("/{node_id}/enrollment-token")
     public Mono<NodeTokenResponse> issueToken(@PathVariable("node_id") Long nodeId) {
         Duration ttl = Duration.ofMinutes(20);
-        return tokenService.issueToken(nodeId, ttl)
-            .map(token -> new NodeTokenResponse(token, ttl.toSeconds()));
+        return tokenService.issueToken(nodeId, ttl).map(token -> new NodeTokenResponse(token, ttl.toSeconds()));
     }
-    public record RegisterResponse(String certificatePem, String caCertificatePem) {}
 
     @Operation(
         summary = "Register node",
@@ -160,37 +148,7 @@ public class NodeController {
         }
     )
     @PostMapping("/register")
-    public Mono<RegisterResponse> register(@RequestBody RegisterNode req) {
-        return tokenService.consumeToken(req.token())
-            .switchIfEmpty(Mono.error(new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED, "invalid, expired, or already used token")))
-            .flatMap(nodeId -> nodeRepository.findById(nodeId)
-                .switchIfEmpty(Mono.error(new NodeNotFoundException()))
-                .flatMap(node -> signAndPersist(node, req.csrPem())));
-    }
-
-    private Mono<RegisterResponse> signAndPersist(Node node, String csrPem) {
-        try {
-            X509Certificate cert = ca.signNodeCsr(csrPem, node.getIdNode());
-            String fingerprint = sha256Fingerprint(cert);
-
-            node.setCertFingerprint(fingerprint);
-            node.setCertIssuedAt(cert.getNotBefore().toInstant());
-            node.setCertExpiresAt(cert.getNotAfter().toInstant());
-
-            String certPem = PemUtils.toPem(cert);
-            String caCertPem = PemUtils.toPem(ca.caCertificate());
-
-            return nodeRepository.save(node)
-                .map(saved -> new RegisterResponse(certPem, caCertPem));
-        } catch (Exception e) {
-            return Mono.error(new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "failed to sign CSR: " + e.getMessage()));
-        }
-    }
-
-    private String sha256Fingerprint(X509Certificate cert) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        return Base64.getEncoder().encodeToString(digest.digest(cert.getEncoded()));
+    public Mono<RegisterResponse> register(@RequestBody RegisterNode registerNode) {
+        return nodeService.signAndPersist(registerNode);
     }
 }

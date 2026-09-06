@@ -25,12 +25,14 @@ public class EnrollmentTokenServiceImpl implements EnrollmentTokenService {
     public Mono<String> issueToken(Long nodeId, Duration ttl) {
         byte[] bytes = new byte[32];
         random.nextBytes(bytes);
+
         String rawToken = Base64.getEncoder().withoutPadding().encodeToString(bytes);
         return redis.opsForValue()
             .set(KEY_PREFIX + TokenHasher.hash(rawToken), String.valueOf(nodeId), ttl)
             .thenReturn(rawToken);
     }
 
+    @Override
     public Mono<Long> consumeToken(String rawToken) {
         return redis.opsForValue()
             .getAndDelete(KEY_PREFIX + TokenHasher.hash(rawToken))
