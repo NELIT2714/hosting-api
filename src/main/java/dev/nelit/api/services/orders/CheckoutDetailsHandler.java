@@ -9,5 +9,5 @@ import reactor.util.function.Tuple2;
 
 public interface CheckoutDetailsHandler<T extends CheckoutDetails> {
     Class<T> getSupportedType();
-    Mono<Tuple2<PaymentResponse, CheckoutLineItem>> prepare(Long idUser, PaymentGateway gateway, T details);
+    Mono<Tuple2<PaymentResponse, CheckoutLineItem>> prepare(Long idUser, PaymentGateway gateway, T details, int discountPercent);
 }

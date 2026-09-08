@@ -7,5 +7,5 @@ import reactor.core.publisher.Mono;
 
 public interface PaymentGatewayStrategy {
     PaymentGateway getType();
-    Mono<String> createSession(PaymentResponse payment, CheckoutLineItem lineItem);
+    Mono<String> createSession(PaymentResponse payment, CheckoutLineItem lineItem, Integer discountPercent);
 }

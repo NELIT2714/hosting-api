@@ -10,30 +10,30 @@ import java.time.Instant;
 
 @Data
 @Builder
-@Table(name = "promo_codes")
-public class PromoCode {
+@Table(name = "promo_codes_uses")
+public class PromoCodeUse {
 
     @Id
+    @Column("id_promo_use")
+    private Long idPromoUse;
+
+    @Column("id_user")
+    private Long idUser;
+
     @Column("id_promo")
     private Long idPromo;
 
-    @Column("code")
-    private String code;
+    @Column("id_payment")
+    private Long idPayment;
 
-    @Column("amount_of_uses")
-    private Integer amountOfUses;
-
-    @Column("discount")
-    private int discount;
-
-    @Column("is_active")
-    private Boolean isActive;
+    @Column("status")
+    private String status;
 
     @Column("expires_at")
     private Instant expiresAt;
 
     @Builder.Default
-    @Column("created_at")
-    private Instant createdAt = Instant.now();
-
+    @Column("used_at")
+    private Instant usedAt = Instant.now();
 }
+

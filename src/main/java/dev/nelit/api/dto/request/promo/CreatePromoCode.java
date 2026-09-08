@@ -12,7 +12,7 @@ public record CreatePromoCode(
     String promoCode,
 
     @NotNull
-    @Min(1) @Max(100)
+    @Min(1) @Max(99)
     @JsonProperty("discount")
     Integer discount,
 
