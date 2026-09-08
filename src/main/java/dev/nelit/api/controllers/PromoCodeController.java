@@ -1,8 +1,8 @@
 package dev.nelit.api.controllers;
 
-import dev.nelit.api.domain.entity.promo.PromoCode;
 import dev.nelit.api.dto.request.promo.CreatePromoCode;
-import dev.nelit.api.services.PromoCodeService;
+import dev.nelit.api.dto.response.PromoCodeResponse;
+import dev.nelit.api.services.promo.PromoCodeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,8 +18,13 @@ public class PromoCodeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<PromoCode> create(@Valid @RequestBody CreatePromoCode promoCodeDTO) {
-        return promoCodeService.create(promoCodeDTO.promoCode(), promoCodeDTO.discount(), promoCodeDTO.amountOfUses(), promoCodeDTO.expiresAt());
+    public Mono<PromoCodeResponse> create(@Valid @RequestBody CreatePromoCode promoCodeDTO) {
+        return promoCodeService.create(promoCodeDTO);
     }
 
+    @DeleteMapping("/{promo_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Void> delete(@PathVariable("promo_id") Long promoId) {
+        return promoCodeService.delete(promoId);
+    }
 }

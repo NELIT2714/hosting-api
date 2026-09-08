@@ -6,5 +6,6 @@ public record CheckoutLineItem(
     String description,
     BigDecimal unitAmount,
     String currency,
-    long quantity) {
-}
+    Long quantity,
+    BigDecimal fullPrice
+) {}

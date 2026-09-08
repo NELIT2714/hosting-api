@@ -20,7 +20,7 @@ public class StripeGatewayStrategy implements PaymentGatewayStrategy {
     }
 
     @Override
-    public Mono<String> createSession(PaymentResponse payment, CheckoutLineItem lineItem) {
-        return stripeCheckoutService.createSession(payment, lineItem);
+    public Mono<String> createSession(PaymentResponse payment, CheckoutLineItem lineItem, Integer discountPercent) {
+        return stripeCheckoutService.createSession(payment, lineItem, discountPercent);
     }
 }

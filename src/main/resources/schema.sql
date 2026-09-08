@@ -329,7 +329,7 @@ CREATE TABLE IF NOT EXISTS promo_codes
     id_promo            BIGSERIAL NOT NULL,
     code                VARCHAR(32) NOT NULL,
     amount_of_uses      INTEGER DEFAULT NULL CHECK (amount_of_uses IS NULL OR amount_of_uses >= 0),
-    discount            SMALLINT NOT NULL CHECK (discount BETWEEN 1 AND 100),
+    discount            SMALLINT NOT NULL CHECK (discount BETWEEN 1 AND 99),
     is_active           BOOLEAN NOT NULL DEFAULT TRUE,
     expires_at          TIMESTAMPTZ DEFAULT NULL,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -343,21 +343,36 @@ CREATE TABLE IF NOT EXISTS promo_codes
 CREATE TABLE IF NOT EXISTS promo_codes_uses
 (
     id_promo_use        BIGSERIAL NOT NULL,
-    id_user             BIGINT NOT NULL,
-    id_code             BIGINT NOT NULL,
-    used_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
+    id_user              BIGINT NOT NULL,
+    id_promo             BIGINT NOT NULL,
+    id_payment           BIGINT DEFAULT NULL,
+    status               VARCHAR(20) NOT NULL DEFAULT 'RESERVED' CHECK (status IN ('RESERVED', 'CONFIRMED', 'CANCELLED', 'EXPIRED')),
+    expires_at           TIMESTAMPTZ DEFAULT NULL,
+    used_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     PRIMARY KEY (id_promo_use),
-    UNIQUE (id_user, id_code),
 
     FOREIGN KEY (id_user) REFERENCES users(id_user)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
-    FOREIGN KEY (id_code) REFERENCES promo_codes(id_promo)
+    FOREIGN KEY (id_promo) REFERENCES promo_codes(id_promo)
         ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (id_payment) REFERENCES payments(id_payment)
+        ON DELETE SET NULL
         ON UPDATE CASCADE
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_promo_codes_uses_code ON promo_codes_uses (id_code);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_promo_codes_uses_active
+    ON promo_codes_uses (id_user, id_promo)
+    WHERE status IN ('RESERVED', 'CONFIRMED');
+
+CREATE INDEX IF NOT EXISTS idx_promo_codes_uses_expiry
+    ON promo_codes_uses (expires_at)
+    WHERE status = 'RESERVED';
+
+CREATE INDEX IF NOT EXISTS idx_promo_codes_uses_promo_status
+    ON promo_codes_uses (id_promo, status);
