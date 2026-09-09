@@ -76,6 +76,8 @@ public class SecurityConfig {
 
                 // Promo Codes
                 .pathMatchers(HttpMethod.POST, "/v1/promo-codes").hasAuthority("PERMISSION_PROMO_CODE_CREATE")
+                .pathMatchers(HttpMethod.PATCH, "/v1/promo-codes/**").hasAuthority("PERMISSION_PROMO_CODE_UPDATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/promo-codes/**").hasAuthority("PERMISSION_PROMO_CODE_DELETE")
 
                 // TODO: delete this
 

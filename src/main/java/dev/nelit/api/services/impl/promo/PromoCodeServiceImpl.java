@@ -4,7 +4,9 @@ import dev.nelit.api.domain.entity.promo.PromoCode;
 import dev.nelit.api.domain.exception.promo.PromoCodeAlreadyExistsException;
 import dev.nelit.api.domain.exception.promo.PromoCodeNotFoundException;
 import dev.nelit.api.dto.request.promo.CreatePromoCode;
+import dev.nelit.api.dto.request.promo.UpdatePromoCode;
 import dev.nelit.api.dto.response.PromoCodeResponse;
+import dev.nelit.api.mappers.PromoCodeMapper;
 import dev.nelit.api.repository.promo.PromoCodeRepository;
 import dev.nelit.api.services.promo.PromoCodeService;
 import dev.nelit.api.services.promo.PromoCodeUseService;
@@ -21,6 +23,7 @@ public class PromoCodeServiceImpl implements PromoCodeService {
 
     private final PromoCodeRepository promoCodeRepository;
     private final PromoCodeUseService promoCodeUseService;
+    private final PromoCodeMapper promoCodeMapper;
     private final TransactionalOperator to;
 
     @Override
@@ -31,7 +34,7 @@ public class PromoCodeServiceImpl implements PromoCodeService {
     }
 
     @Override
-    public Mono<PromoCodeResponse> applyToPayment(String code, Long userId, Long idPayment) {
+    public Mono<PromoCodeResponse> applyToPayment(String code, long userId, long idPayment) {
         return promoCodeRepository.findLockedByCode(code)
             .switchIfEmpty(Mono.error(new PromoCodeNotFoundException()))
             .flatMap(promo -> promoCodeUseService.reserve(promo, userId, idPayment))
@@ -55,7 +58,22 @@ public class PromoCodeServiceImpl implements PromoCodeService {
     }
 
     @Override
+    public Mono<PromoCodeResponse> update(long promoId, UpdatePromoCode promoCodeDTO) {
+        return getPromoCode(promoId)
+            .flatMap(promo -> {
+                promoCodeMapper.update(promoCodeDTO, promo);
+                return promoCodeRepository.save(promo);
+            })
+            .map(promoCodeMapper::toResponse);
+    }
+
+    @Override
     public Mono<Void> delete(long promoId) {
-        return promoCodeRepository.deleteById(promoId);
+        return getPromoCode(promoId).flatMap(promoCodeRepository::delete);
+    }
+
+    private Mono<PromoCode> getPromoCode(Long idPromo) {
+        return promoCodeRepository.findById(idPromo)
+            .switchIfEmpty(Mono.error(new PromoCodeNotFoundException()));
     }
 }
