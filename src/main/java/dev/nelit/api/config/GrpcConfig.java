@@ -17,7 +17,7 @@ import java.io.File;
 public class GrpcConfig {
 
     @Bean
-    public VMManagerGrpc.VMManagerBlockingStub vmManagerStub(
+    public VMManagerGrpc.VMManagerStub vmManagerStub(
         @Value("${grpc.vm-manager.host}") String host,
         @Value("${grpc.vm-manager.port}") int port,
         @Value("${pki.api-cert}") String certPath,
@@ -35,6 +35,6 @@ public class GrpcConfig {
             .sslContext(sslContext)
             .build();
 
-        return VMManagerGrpc.newBlockingStub(channel);
+        return VMManagerGrpc.newStub(channel);
     }
 }
