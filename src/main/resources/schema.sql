@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users
 (
     id_user        BIGSERIAL NOT NULL,
+    balance        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     email          VARCHAR(255),
     password_hash  VARCHAR(255),
     deleted_at     TIMESTAMPTZ DEFAULT NULL,

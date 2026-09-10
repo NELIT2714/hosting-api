@@ -28,6 +28,13 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
+    public Mono<UserResponse> getById(long idUser) {
+        return userRepository.findById(idUser)
+            .switchIfEmpty(Mono.error(new UserNotFoundException()))
+            .map(userMapper::toResponse);
+    }
+
+    @Override
     public Mono<UserResponse> create(Register dto) {
         User user = User.builder()
             .email(dto.email())
@@ -40,7 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> changePassword(Long idUser, ChangePassword changePasswordDTO) {
+    public Mono<Void> changePassword(long idUser, ChangePassword changePasswordDTO) {
         return userRepository.findById(idUser)
             .switchIfEmpty(Mono.error(new UserNotFoundException()))
             .flatMap(user -> {
@@ -57,7 +64,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> delete(Long idUser) {
+    public Mono<Void> delete(long idUser) {
         return userRepository.findById(idUser)
             .switchIfEmpty(Mono.error(new UserNotFoundException()))
             .flatMap(user -> {

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -23,6 +24,22 @@ import reactor.core.publisher.Mono;
 public class UserController {
 
     private final UserService userService;
+
+    @Operation(
+        summary = "Get current user",
+        description = "Returns the profile of the currently authenticated user.",
+        security = @SecurityRequirement(name = "bearerAuth"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Current user profile",
+                content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token",
+                content = @Content(schema = @Schema(hidden = true)))
+        }
+    )
+    @GetMapping("/me")
+    public Mono<UserResponse> getMe(@AuthenticationPrincipal Long idUser) {
+        return userService.getById(idUser);
+    }
 
     @Operation(
         summary = "Register a new user",
@@ -41,7 +58,6 @@ public class UserController {
     public Mono<UserResponse> create(@RequestBody @Valid Register registerDTO) {
         return userService.create(registerDTO);
     }
-
     @Operation(
         summary = "Change password",
         description = "Updates the password for the currently authenticated user.",
@@ -56,10 +72,8 @@ public class UserController {
     )
     @PatchMapping("/change-password")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> changePassword(@RequestBody @Valid ChangePassword changePasswordDTO) {
-        return Mono.deferContextual(ctx -> {
-            Long idUser = ctx.get("id_user");
-            return userService.changePassword(idUser, changePasswordDTO);
-        });
+    public Mono<Void> changePassword(@AuthenticationPrincipal long idUser,
+                                     @RequestBody @Valid ChangePassword changePasswordDTO) {
+        return userService.changePassword(idUser, changePasswordDTO);
     }
 }

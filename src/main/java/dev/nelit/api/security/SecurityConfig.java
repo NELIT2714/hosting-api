@@ -41,11 +41,12 @@ public class SecurityConfig {
                 .pathMatchers("/v1/webhooks/**").permitAll()
                 .pathMatchers("/v1/auth/**").permitAll()
 
+                .pathMatchers(HttpMethod.GET, "/v1/users/me").authenticated()
                 .pathMatchers(HttpMethod.POST, "/v1/users").permitAll()
                 .pathMatchers(HttpMethod.PATCH, "/v1/users/change-password").authenticated()
 
                 // Plans
-                .pathMatchers(HttpMethod.GET, "/v1/plans").authenticated()
+                .pathMatchers(HttpMethod.GET, "/v1/plans").permitAll()
                 .pathMatchers(HttpMethod.POST, "/v1/plans").hasAuthority("PERMISSION_PLAN_CREATE")
                 .pathMatchers(HttpMethod.PATCH, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_DELETE")
@@ -79,11 +80,11 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.PATCH, "/v1/promo-codes/**").hasAuthority("PERMISSION_PROMO_CODE_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/promo-codes/**").hasAuthority("PERMISSION_PROMO_CODE_DELETE")
 
-                // TODO: delete this
+                // Admins
 
-                .pathMatchers(HttpMethod.POST,   "/v1/admins").permitAll()
-                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").permitAll()
-                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").permitAll()
+                .pathMatchers(HttpMethod.POST,   "/v1/admins").hasAuthority("PERMISSION_ADMIN_CREATE")
+                .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").hasAuthority("PERMISSION_ADMIN_UPDATE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").hasAuthority("PERMISSION_ADMIN_DELETE")
 
                 .anyExchange().denyAll()
             )
