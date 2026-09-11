@@ -13,4 +13,5 @@ import java.time.Instant;
 @Repository
 public interface PaymentRepository extends ReactiveCrudRepository<Payment, Long> {
     Flux<Payment> findAllByStatusAndCreatedAtBefore(PaymentStatus status, Instant createdAt);
+    Flux<Payment> findAllByIdUser(Long idUser);
 }

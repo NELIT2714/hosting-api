@@ -46,7 +46,6 @@ public class VpsCheckoutHandler implements CheckoutDetailsHandler<VpsCheckoutDet
                 BigDecimal finalPrice = applyDiscount(fullPrice, discountPercent);
 
                 return paymentService.create(idUser, PaymentStatus.PENDING, gateway, null, finalPrice, CURRENCY, details.type())
-                    .map(paymentMapper::toResponse)
                     .flatMap(payment -> osImageService.getById(details.idOsImage())
                         .flatMap(image -> vpsOrderService.create(payment.idPayment(), details.idPlan(), image.idOsImage())
                             .thenReturn(payment)))

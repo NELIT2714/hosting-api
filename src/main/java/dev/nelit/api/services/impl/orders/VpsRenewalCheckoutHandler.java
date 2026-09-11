@@ -48,8 +48,8 @@ public class VpsRenewalCheckoutHandler implements CheckoutDetailsHandler<VpsRene
                     BigDecimal fullPrice = plan.pricePerMonth();
                     BigDecimal finalPrice = applyDiscount(fullPrice, discountPercent);
                     return paymentService.create(idUser, PaymentStatus.PENDING, gateway, null, finalPrice, CURRENCY, details.type())
-                        .flatMap(payment -> vpsRenewalOrderService.create(payment.getIdPayment(), details.idVm(), RENEWAL_DAYS)
-                            .thenReturn(paymentMapper.toResponse(payment)))
+                        .flatMap(payment -> vpsRenewalOrderService.create(payment.idPayment(), details.idVm(), RENEWAL_DAYS)
+                            .thenReturn(payment))
                         .map(payment -> {
                             CheckoutLineItem lineItem = new CheckoutLineItem(
                                 String.format("VPS renewal — %s, %d days", plan.planName(), RENEWAL_DAYS),

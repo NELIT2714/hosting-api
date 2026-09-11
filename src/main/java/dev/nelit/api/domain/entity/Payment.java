@@ -44,4 +44,7 @@ public class Payment {
     @Column("created_at")
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+    @Column("updated_at")
+    private Instant updatedAt;
 }

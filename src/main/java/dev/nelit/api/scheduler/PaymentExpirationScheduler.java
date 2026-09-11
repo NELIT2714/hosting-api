@@ -4,6 +4,8 @@ import dev.nelit.api.enums.PaymentStatus;
 import dev.nelit.api.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -20,6 +22,7 @@ public class PaymentExpirationScheduler {
     private final TransactionalOperator tx;
 
     @Scheduled(cron = "0 */35 * * * *", zone = "UTC")
+    @EventListener(ApplicationReadyEvent.class)
     public void expireOldPayments() {
         Instant threshold = Instant.now().minus(35, ChronoUnit.MINUTES);
 

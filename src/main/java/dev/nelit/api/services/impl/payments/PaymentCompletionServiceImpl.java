@@ -36,7 +36,7 @@ public class PaymentCompletionServiceImpl implements PaymentCompletionService {
         return paymentService.update(idPayment, PaymentStatus.SUCCEEDED, gatewayPaymentId)
             .flatMap(payment -> promoCodeUseService.confirmByPayment(idPayment)
                 .then(Mono.defer(() -> {
-                    PaymentFulfillmentHandler handler = fulfillmentHandlers.get(payment.getType());
+                    PaymentFulfillmentHandler handler = fulfillmentHandlers.get(payment.type());
                     if (handler == null) return Mono.error(new PaymentFulfillmentNotSupportedException());
                     return handler.fulfill(payment);
                 })));

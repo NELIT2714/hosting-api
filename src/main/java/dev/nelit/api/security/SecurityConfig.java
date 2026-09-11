@@ -86,6 +86,9 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").hasAuthority("PERMISSION_ADMIN_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").hasAuthority("PERMISSION_ADMIN_DELETE")
 
+                // Payments
+                .pathMatchers(HttpMethod.GET, "/v1/payments").authenticated()
+
                 .anyExchange().denyAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)

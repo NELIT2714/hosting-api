@@ -1,6 +1,7 @@
 package dev.nelit.api.services.impl.orders;
 
 import dev.nelit.api.domain.entity.Payment;
+import dev.nelit.api.dto.response.PaymentResponse;
 import dev.nelit.api.enums.PaymentType;
 import dev.nelit.api.services.payments.PaymentFulfillmentHandler;
 import dev.nelit.api.services.orders.VpsRenewalOrderService;
@@ -24,8 +25,8 @@ public class VpsRenewalFulfillmentHandler implements PaymentFulfillmentHandler {
     }
 
     @Override
-    public Mono<Void> fulfill(Payment payment) {
-        return vpsRenewalOrderService.getByIdPayment(payment.getIdPayment())
+    public Mono<Void> fulfill(PaymentResponse payment) {
+        return vpsRenewalOrderService.getByIdPayment(payment.idPayment())
             .flatMap(order -> vmService.renew(order.getIdVm(), order.getDays())
                 .then(vmLifecycleService.unblockIfBlocked(order.getIdVm())))
             .then();

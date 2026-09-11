@@ -5,6 +5,8 @@ import dev.nelit.api.repository.vm.VmRepository;
 import dev.nelit.api.services.vm.VmLifecycleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -22,6 +24,7 @@ public class VmLifecycleScheduler {
     private final VmLifecycleRepository vmLifecycleRepository;
 
     @Scheduled(cron = "0 0 0 * * *", zone = "UTC")
+    @EventListener(ApplicationReadyEvent.class)
     public void runDailyLifecycle() {
         log.info("[scheduler] daily lifecycle started");
         blockExpired()
