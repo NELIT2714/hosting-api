@@ -79,7 +79,7 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.findByIdUser(idUser)
             .flatMap(admin -> adminPermissionRepository.findByIdAdmin(admin.getIdAdmin())
                 .map(dev.nelit.api.domain.entity.admin.AdminPermission::getPermission)
-                .any(p -> p.equals(permission.name()))
+                .any(p -> p.equals(permission))
             )
             .defaultIfEmpty(false);
     }

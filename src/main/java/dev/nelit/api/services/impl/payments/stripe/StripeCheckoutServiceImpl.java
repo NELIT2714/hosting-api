@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -35,7 +34,7 @@ public class StripeCheckoutServiceImpl {
                     .setQuantity(lineItem.quantity())
                     .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
                         .setCurrency(lineItem.currency().toLowerCase())
-                        .setUnitAmountDecimal(lineItem.fullPrice().movePointRight(2))  // всегда полная цена, без реконструкции
+                        .setUnitAmountDecimal(lineItem.fullPrice().movePointRight(2))
                         .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
                             .setName(lineItem.description())
                             .build())

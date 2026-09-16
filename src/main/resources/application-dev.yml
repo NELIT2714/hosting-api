@@ -15,9 +15,3 @@ spring:
 
 scalar:
   enabled: true
-
-pki:
-  api-cert: ${PKI_API_CERT}
-  api-key: ${PKI_API_KEY}
-  ca-cert: ${PKI_CA_CERT}
-  ca-key: ${PKI_CA_KEY}

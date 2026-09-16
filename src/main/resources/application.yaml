@@ -62,12 +62,19 @@ payments:
   stripe:
     secret-key: ${PAYMENTS_STRIPE_SECRET_KEY}
     webhook-secret: ${PAYMENTS_STRIPE_WEBHOOK_SECRET}
+  nowpayments:
+    api-key: ${PAYMENTS_NOWPAYMENTS_API_KEY}
+    ipn-secret: ${PAYMENTS_NOWPAYMENTS_IPN_SECRET}
+    base-url: ${PAYMENTS_NOWPAYMENTS_BASE_URL}
+    success-url: ${PAYMENTS_NOWPAYMENTS_SUCCESS_URL}
+    cancel-url: ${PAYMENTS_NOWPAYMENTS_CANCEL_URL}
+    ipn-callback-url: ${PAYMENTS_NOWPAYMENTS_IPN_URL}
 
 pki:
-#  api-cert: /etc/hosting/certs/api/tls.crt
-#  api-key: /etc/hosting/certs/api/tls.key
-#  ca-cert: /etc/hosting/certs/api/ca.crt
-#  ca-key: /etc/hosting/certs/ca/ca.key
+  api-cert: ${PKI_API_CERT}
+  api-key: ${PKI_API_KEY}
+  ca-cert: ${PKI_CA_CERT}
+  ca-key: ${PKI_CA_KEY}
   node-cert-validity-days: 90
 
 springdoc:
