@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,15 +49,11 @@ public class CheckoutController {
         }
     )
     @PostMapping
-    public Mono<CheckoutResponse> checkout(@RequestBody CheckoutRequest request) {
+    public Mono<CheckoutResponse> checkout(@Valid @RequestBody CheckoutRequest request) {
         return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> {
                 Long idUser = (Long) Objects.requireNonNull(ctx.getAuthentication()).getPrincipal();
-                return ipPoolService.hasAvailable()
-                    .flatMap(hasIp -> {
-                        if (!hasIp) return Mono.error(new NoAvailableAddressesException());
-                        return checkoutService.checkout(idUser, request);
-                    });
+                return checkoutService.checkout(idUser, request);
             });
     }
 

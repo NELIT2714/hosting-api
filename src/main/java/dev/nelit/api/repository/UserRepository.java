@@ -14,6 +14,10 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     Mono<User> findByEmail(String email);
 
     @Modifying
+    @Query("UPDATE users SET balance = balance + :amount WHERE id_user = :idUser")
+    Mono<Integer> creditBalance(long idUser, BigDecimal amount);
+
+    @Modifying
     @Query("UPDATE users SET balance = balance - :amount WHERE id_user = :idUser AND balance >= :amount")
     Mono<Integer> deductBalance(long idUser, BigDecimal amount);
 }

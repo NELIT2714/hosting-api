@@ -1,4 +1,4 @@
-package dev.nelit.api.services.impl.payment.order;
+package dev.nelit.api.services.impl.payment.order.vps;
 
 import dev.nelit.api.dto.response.PaymentResponse;
 import dev.nelit.api.enums.PaymentType;

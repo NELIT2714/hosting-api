@@ -1,4 +1,4 @@
-package dev.nelit.api.services.impl.payment.order;
+package dev.nelit.api.services.impl.payment.order.vps;
 
 import dev.nelit.api.domain.entity.vps.VpsOrder;
 import dev.nelit.api.domain.exception.payment.PaymentNotFoundException;

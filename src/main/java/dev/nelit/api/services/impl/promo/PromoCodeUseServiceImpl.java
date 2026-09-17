@@ -52,28 +52,12 @@ public class PromoCodeUseServiceImpl implements PromoCodeUseService {
 
     @Override
     public Mono<Void> confirmByPayment(Long idPayment) {
-        return promoCodeUseRepository.confirmByPayment(idPayment)
-            .as(to::transactional)
-            .flatMap(updated -> {
-                if (updated == 0) {
-                    log.warn("No RESERVED promo_codes_uses found for idPayment={} on confirm", idPayment);
-                }
-                return Mono.empty();
-            })
-            .then();
+        return promoCodeUseRepository.confirmByPayment(idPayment).as(to::transactional).then();
     }
 
     @Override
     public Mono<Void> cancelByPayment(Long idPayment) {
-        return promoCodeUseRepository.cancelByPayment(idPayment)
-            .as(to::transactional)
-            .flatMap(updated -> {
-                if (updated == 0) {
-                    log.warn("No RESERVED promo_codes_uses found for idPayment={} on cancel", idPayment);
-                }
-                return Mono.empty();
-            })
-            .then();
+        return promoCodeUseRepository.cancelByPayment(idPayment).as(to::transactional).then();
     }
 
     @Override

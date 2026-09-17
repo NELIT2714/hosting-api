@@ -1,4 +1,4 @@
-package dev.nelit.api.services.impl.payment.order;
+package dev.nelit.api.services.impl.payment.order.vps.renewal;
 
 import dev.nelit.api.dto.CheckoutLineItem;
 import dev.nelit.api.dto.request.checkout.VpsRenewalDetails;

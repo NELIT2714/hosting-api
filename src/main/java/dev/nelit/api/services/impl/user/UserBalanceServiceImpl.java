@@ -16,6 +16,11 @@ public class UserBalanceServiceImpl implements UserBalanceService {
     private final UserRepository userRepository;
 
     @Override
+    public Mono<Void> credit(long idUser, BigDecimal amount) {
+        return userRepository.creditBalance(idUser, amount).then();
+    }
+
+    @Override
     public Mono<Void> deduct(long idUser, BigDecimal amount) {
         return userRepository.deductBalance(idUser, amount)
             .defaultIfEmpty(0)
