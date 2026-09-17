@@ -1,6 +1,6 @@
 package dev.nelit.api.controllers.webhooks;
 
-import dev.nelit.api.services.payments.nowpayments.NowPaymentsWebhookService;
+import dev.nelit.api.services.payment.nowpayments.NowPaymentsWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

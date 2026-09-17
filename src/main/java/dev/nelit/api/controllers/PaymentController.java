@@ -1,7 +1,7 @@
 package dev.nelit.api.controllers;
 
 import dev.nelit.api.dto.response.PaymentResponse;
-import dev.nelit.api.services.payments.PaymentService;
+import dev.nelit.api.services.payment.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -7,10 +7,9 @@ import dev.nelit.api.dto.request.checkout.CheckoutRequest;
 import dev.nelit.api.dto.response.CheckoutResponse;
 import dev.nelit.api.enums.PaymentGateway;
 import dev.nelit.api.services.CheckoutService;
-import dev.nelit.api.services.orders.CheckoutDetailsHandler;
-import dev.nelit.api.services.payments.PaymentGatewayStrategy;
+import dev.nelit.api.services.payment.order.CheckoutDetailsHandler;
+import dev.nelit.api.services.payment.PaymentGatewayStrategy;
 import dev.nelit.api.services.promo.PromoCodeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 

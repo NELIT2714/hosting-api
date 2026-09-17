@@ -1,0 +1,16 @@
+package dev.nelit.api.services.payment;
+
+import dev.nelit.api.dto.response.PaymentResponse;
+import dev.nelit.api.enums.PaymentGateway;
+import dev.nelit.api.enums.PaymentStatus;
+import dev.nelit.api.enums.PaymentType;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+
+public interface PaymentService {
+    Flux<PaymentResponse> getAll(long idUser);
+    Mono<PaymentResponse> create(long idUser, PaymentStatus status, PaymentGateway gateway, String gatewayPaymentId, BigDecimal amount, String currency, PaymentType type);
+    Mono<PaymentResponse> update(long idPayment, PaymentStatus status, String gatewayPaymentId);
+}

@@ -6,7 +6,7 @@ import dev.nelit.api.dto.response.VM.VmResponse;
 import dev.nelit.api.dto.response.VM.VmStatusResponse;
 import dev.nelit.api.dto.response.VM.VncConsoleResponse;
 import dev.nelit.api.services.vm.VmService;
-import dev.nelit.api.services.orders.VpsOrderService;
+import dev.nelit.api.services.payment.order.VpsOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,17 +15,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Tag(name = "Virtual Machines", description = "VPS instance lifecycle management")
 @RestController

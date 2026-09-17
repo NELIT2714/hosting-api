@@ -5,6 +5,7 @@ import dev.nelit.api.domain.exception.user.InvalidPasswordException;
 import dev.nelit.api.dto.request.user.Login;
 import dev.nelit.api.dto.response.AuthTokens;
 import dev.nelit.api.services.*;
+import dev.nelit.api.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -21,7 +21,7 @@ import dev.nelit.api.services.IpPoolService;
 import dev.nelit.api.services.NodeService;
 import dev.nelit.api.services.OsImageService;
 import dev.nelit.api.services.PlanService;
-import dev.nelit.api.services.orders.VpsOrderService;
+import dev.nelit.api.services.payment.order.VpsOrderService;
 import dev.nelit.api.services.vm.VmService;
 import dev.nelit.api.util.VMNameGenerator;
 import lombok.RequiredArgsConstructor;

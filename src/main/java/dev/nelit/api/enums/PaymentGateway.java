@@ -1,5 +1,5 @@
 package dev.nelit.api.enums;
 
 public enum PaymentGateway {
-    STRIPE, NOWPAYMENTS
+    BALANCE, STRIPE, NOWPAYMENTS
 }
