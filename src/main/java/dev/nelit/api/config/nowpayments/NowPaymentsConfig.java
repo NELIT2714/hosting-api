@@ -1,4 +1,4 @@
-package dev.nelit.api.config;
+package dev.nelit.api.config.nowpayments;
 
 import com.google.common.net.HttpHeaders;
 import lombok.RequiredArgsConstructor;

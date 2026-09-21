@@ -14,7 +14,7 @@ logging:
 
 spring:
   profiles:
-    active: dev
+    active: ${PROFILE}
 
   security:
     user:

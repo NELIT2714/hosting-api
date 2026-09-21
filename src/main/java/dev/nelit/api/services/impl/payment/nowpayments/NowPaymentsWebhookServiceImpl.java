@@ -1,6 +1,6 @@
 package dev.nelit.api.services.impl.payment.nowpayments;
 
-import dev.nelit.api.config.NowPaymentsProperties;
+import dev.nelit.api.config.nowpayments.NowPaymentsProperties;
 import dev.nelit.api.domain.exception.nowpayments.InvalidNowPaymentsSignatureException;
 import dev.nelit.api.dto.nowpayments.NowPaymentsIpnPayload;
 import dev.nelit.api.services.payment.PaymentCompletionService;

@@ -31,6 +31,7 @@ public class OpenApiConfig {
                 ))
             .servers(List.of(
                 new Server().url("http://localhost:4000").description("Local"),
+                new Server().url("http://91.238.57.176:4000").description("Local"),
                 new Server().url("http://api.vizora.host").description("Local")
 //                new Server().url("https://api.example.com").description("Production")
             ))

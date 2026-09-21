@@ -21,6 +21,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -47,21 +48,21 @@ public class SecurityConfig {
 
                 // Plans
                 .pathMatchers(HttpMethod.GET, "/v1/plans").permitAll()
-                .pathMatchers(HttpMethod.POST, "/v1/plans").hasAuthority("PERMISSION_PLAN_CREATE")
-                .pathMatchers(HttpMethod.PATCH, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_UPDATE")
-                .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_DELETE")
+                .pathMatchers(HttpMethod.POST, "/v1/plans").hasAuthority("PERMISSION_PLAN_MANAGE")
+                .pathMatchers(HttpMethod.PATCH, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_MANAGE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/plans/**").hasAuthority("PERMISSION_PLAN_MANAGE")
 
                 // Nodes
                 .pathMatchers(HttpMethod.GET, "/v1/nodes/locations").permitAll()
                 .pathMatchers(HttpMethod.POST, "/v1/nodes/register").permitAll()
-                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_CREATE")
-                .pathMatchers(HttpMethod.POST, "/v1/nodes/*/enrollment-token").hasAuthority("PERMISSION_NODE_CREATE")
-                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_UPDATE")
-                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_DELETE")
+                .pathMatchers(HttpMethod.POST, "/v1/nodes").hasAuthority("PERMISSION_NODE_MANAGE")
+                .pathMatchers(HttpMethod.POST, "/v1/nodes/*/enrollment-token").hasAuthority("PERMISSION_NODE_MANAGE")
+                .pathMatchers(HttpMethod.PATCH, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_MANAGE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/nodes/**").hasAuthority("PERMISSION_NODE_MANAGE")
 
                 // IP pool
-                .pathMatchers(HttpMethod.POST, "/v1/ip-pool").hasAuthority("PERMISSION_IP_CREATE")
-                .pathMatchers(HttpMethod.DELETE, "/v1/ip-pool/**").hasAuthority("PERMISSION_IP_DELETE")
+                .pathMatchers(HttpMethod.POST, "/v1/ip-pool").hasAuthority("PERMISSION_IP_MANAGE")
+                .pathMatchers(HttpMethod.DELETE, "/v1/ip-pool/**").hasAuthority("PERMISSION_IP_MANAGE")
 
                 // Vm
                 .pathMatchers("/v1/vms").authenticated()
@@ -81,7 +82,6 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.DELETE, "/v1/promo-codes/**").hasAuthority("PERMISSION_PROMO_CODE_DELETE")
 
                 // Admins
-
                 .pathMatchers(HttpMethod.POST,   "/v1/admins").hasAuthority("PERMISSION_ADMIN_CREATE")
                 .pathMatchers(HttpMethod.PATCH,  "/v1/admins/**").hasAuthority("PERMISSION_ADMIN_UPDATE")
                 .pathMatchers(HttpMethod.DELETE, "/v1/admins/**").hasAuthority("PERMISSION_ADMIN_DELETE")
@@ -92,6 +92,7 @@ public class SecurityConfig {
                 .anyExchange().denyAll()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(rateLimitFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 

@@ -15,3 +15,8 @@ spring:
 
 scalar:
   enabled: true
+
+management:
+  endpoint:
+    health:
+      show-details: always

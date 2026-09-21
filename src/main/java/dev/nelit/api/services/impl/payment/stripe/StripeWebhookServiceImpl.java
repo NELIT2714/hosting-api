@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
-import dev.nelit.api.config.StripeProperties;
+import dev.nelit.api.config.stripe.StripeProperties;
 import dev.nelit.api.services.payment.PaymentCompletionService;
 import dev.nelit.api.services.payment.stripe.StripeWebhookService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package dev.nelit.api.services.impl.payment.nowpayments;
 
-import dev.nelit.api.config.NowPaymentsProperties;
+import dev.nelit.api.config.nowpayments.NowPaymentsProperties;
 import dev.nelit.api.dto.CheckoutLineItem;
 import dev.nelit.api.dto.nowpayments.NowPaymentsInvoiceRequest;
 import dev.nelit.api.dto.nowpayments.NowPaymentsInvoiceResponse;

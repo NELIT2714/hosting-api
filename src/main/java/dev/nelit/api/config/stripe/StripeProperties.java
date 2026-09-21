@@ -1,4 +1,4 @@
-package dev.nelit.api.config;
+package dev.nelit.api.config.stripe;
 
 import lombok.Getter;
 import lombok.Setter;

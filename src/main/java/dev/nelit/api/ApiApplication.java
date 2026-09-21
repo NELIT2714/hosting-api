@@ -1,7 +1,7 @@
 package dev.nelit.api;
 
 import dev.nelit.api.config.PkiProperties;
-import dev.nelit.api.config.StripeProperties;
+import dev.nelit.api.config.stripe.StripeProperties;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,5 +23,4 @@ public class ApiApplication {
     void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
-
 }
